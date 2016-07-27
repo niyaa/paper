@@ -7,26 +7,22 @@ import ipVar, funcs;
 import numpy as np;
 from scipy.interpolate import InterpolatedUnivariateSpline;
 class CriticalRe:
-    def __init__(self):
+    def __init__(self,aa):
         self.bdFname='bd.xml';
-        self.bdFPath='/home/nyadav/symm/0.675/bd';
+        self.bdFPath='/home/nyadav/symm/0.6/bd';
         self.geomFname='geom.xml';
         self.FileList=['geom.xml','bd.xml','geomHplusD.fld'];
         self.RePath=os.getcwd();
         self.ReList=[];
-        self.exe='/home/nyadav/nekNewton/dist/bin/IncNavierStokesSolver';
-        self.FilePath='/home/nyadav/symm/ReC';
+        self.exe='/home/nyadav/bin/IncNavierStokesSolver';
+        self.FilePath=os.getcwd();
         self.BetaPath=os.getcwd();
-        self.betaList=[];
+        self.betaList=aa;
         self.Re=0;
         self.beta=0;
         self.temp=0;
-        #for i in range(0,2):
-            #self.betaList.append(0.05+i*0.1);
-        for i in range(0,8):
-            self.betaList.append(0.3+i*0.05);
-        #for i in range(0,2):
-            #self.betaList.append(0.7+i*0.1);
+        self.CreForBeta(); 
+        
 
     def IG(self,beta,ReNm):
         if not (self.bdFname=='0'):
@@ -35,16 +31,16 @@ class CriticalRe:
             tree=ET.parse(self.bdFPath+'/'+self.bdFname,OrderedXMLTreeBuilder());
             root=tree.getroot();
             Re=root[1][1][5].text.split('=')[-1];
-            self.ReList.append(int(Re));
-            ReNew=float(Re)**(abs(beta-0.4)+1);
+            self.ReList.append(int(Re)-0.3*int(Re));
+            ReNew=float(Re)+float(Re)*4*(abs(beta-0.4));
             self.ReList.append(int(ReNew));
             self.CritRe();
             [a,b]=ipVar.poptDir(self.RePath);
-            #self.temp=Re;
+            self.temp=Re;
             while(all(i<0 for i in a)):
                 self.ReList=[];
-                Re=float(Re)+0.1*(float(Re));
-                self.ReList.append(Re);
+                ReNew=float(ReNew)+0.1*(float(ReNew));
+                self.ReList.append(ReNew);
                 self.CritRe();
                 [a,b]=ipVar.poptDir(self.RePath);
             while(all(i>0 for i in a)):
@@ -71,6 +67,20 @@ class CriticalRe:
 
     def ReIter(self):
         [a,b]=ipVar.poptDir(self.RePath);
+        while(all(i > 0 for i in a)):
+            self.ReList=[];
+            ReNew=float(ReNew)+0.1*(float(ReNew));
+            self.ReList.append(ReNew);
+            self.CritRe();
+            [a,b]=ipVar.poptDir(self.RePath);    while(all(i < 0 for i in a)):
+
+        while(all(i > 0 for i in a)):
+            self.ReList=[];
+            ReNew=float(ReNew)+0.1*(float(ReNew));
+            self.ReList.append(ReNew);
+            self.CritRe();
+            [a,b]=ipVar.poptDir(self.RePath);    while(all(i < 0 for i in a)):
+
         z=np.where(np.diff(np.sign(a)))[0];
         i=z[0];
         r1=b[i];r2=b[i+1];

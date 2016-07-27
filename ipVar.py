@@ -171,6 +171,12 @@ def incSolver(exe,filelist):
     print(os.getcwd());
     subprocess.call(args,shell=True);
 
+def incSolverP(exe,filelist):
+    args=exe+' '+filelist[0]+' '+filelist[1]+' &';
+    print('Working in this directory \n');
+    print(os.getcwd());
+    subprocess.call(args,shell=True); 
+
 import numpy as np;
 from case import *;
 import extractdata;
@@ -327,3 +333,26 @@ def poptDir(path1):
     l2, l1 = zip(*sorted(zip(y, x)));
     l2=list(l2);l1=list(l1);
     return l1, l2;
+
+
+def poptDirEn(path1,up,down):
+    cwd=path1;
+    path=glob('*/');
+    x=[];y=[];
+    for i in path:
+        f=i.split('/')[0];
+        newPath=cwd+'/'+f;
+        os.chdir(newPath);
+        print('working in this path \n \n \n \n \n');
+        print(newPath);
+        file=glob("*.mdl");
+        file1=file[0];
+        [a,b]=poptEnRa(file1,up,down);
+        x.append(a[1]/2);
+        y.append(float(f));
+        os.chdir(cwd);
+    l2, l1 = zip(*sorted(zip(y, x)));
+    l2=list(l2);l1=list(l1);
+    return l1, l2;
+
+
