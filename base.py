@@ -60,14 +60,25 @@ class bdFlow:
 
         for i in range(0,len(fileList)):
             shutil.copy(filePath[i]+'/'+fileList[i],os.getcwd()+'/'+fileList[i]);
-
+       
         funcs.simPara(filePath[1],fileList[1],simPara);
         subprocess.call("~/bin/IncNavierStokesSolver geom.xml "+fileList[1]+' > log.txt',shell=True);
 
 class preHoly:
-    def __init__(self,filePath,simPath):
+    def __init__(self,filePath,simPath,f=1):
         self.filePath=filePath;
         self.simPath=simPath;
-    
+        [a,b,chkN,energy]=funcs.chkPerUnitTime('bd.xml');
+        args='~/bin/FldAddFld -1 1 geom3D.bse'+'geom_'+str(chkN)+'.chk'+' geomHplusD.fld';
+        subprocess.call(args,shell=True);
+        E1=np.sqrt(1e-17/energy)*f;
+        args='~/bin/FldAddFld 1 '+str(E1)+' geom3D.bse geomHplusD.fld geomHplusD.fld';
+        subprocess.call(args,shell=True);
+        FileList=['geom.xml','bd.xml','geomHplusD.fld'];
+        for i in FileList:
+            shutil.move(filePath+'/'+i,simPath+'/'+i);
+
+        
+
 
     

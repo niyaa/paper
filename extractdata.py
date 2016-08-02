@@ -78,7 +78,7 @@ def calculate(caseList, up=1e-8, down=1e-18):
             failed.append(icase)
     makeplots.makePlots(failed)
 
-def linearPt(file,up=1e-8, down=1e-18):
+def linearPt(file='EnergyFile.mdl',up=1e-8, down=1e-18):
     icase=Case();
     icase.time, icase.mod, icase.energy= np.loadtxt(file,comments="\x00", skiprows=1, usecols=(0,1,2), unpack=True);
     t1=icase.time[-1];
@@ -128,6 +128,7 @@ def linearPt(file,up=1e-8, down=1e-18):
     
     t = icase.time[(icase.mod==1) & (icase.time>tmin) & (icase.time<tmax)]
     e = icase.energy[(icase.mod==1) & (icase.time>tmin) & (icase.time<tmax)]
-         
+    print(t);
+    print(e);
     return (t,e)
  

@@ -73,6 +73,32 @@ def MaxChk(path):
     os.chdir(pwd);
     return j;
 
+def chkPerUnitTime(fileName,path=os.getcwd()):
+    FilePath=path+'/'+fileName;
+    tree=ET.parse(FilePath,OrderedXMLTreeBuilder());
+    root=tree.getroot();
+    ft=float(root[1][1][1].text.split('=')[-1]);
+    ts=float(root[1][1][0].text.split('=')[-1]);
+    chkOut=float(root[1][1][3].text.split('=')[-1]);
+    
+    case=Case();
+    # Name of the energy file ot be changed for other names 
+    case.time,case.mod,case.energy = np.loadtxt('EnergyFile.mdl', comments="\x00", skiprows=1, usecols=(0,1,2), unpack=True);
+    tn=case.time[-1];
+    chkMax=tn/(ts*chkOut); 
+    [t,e]=extractdata.linearPt('EnergyFile.mdl');
+    
+    aa=np.ceil(t/(chkOut*ts));
+    j=0;
+    for i in aa:
+        if(i.is_integer()):break
+        j=j+1;
+    energy=e[j];
+
+    return 1/(ts*chkOut),chkMax,np.median(aa), energy;
+
+    
+
 def incSolver(exe,filelist):
     args=exe+' '+filelist[0]+' '+filelist[1]+' >log.txt';
     print('Working in this directory \n');
@@ -346,7 +372,52 @@ def firstExt(path,exe,fileList,energyVal,FT,Re,FT2,incre,energyVal2):
         os.chdir(path);
         energy=np.loadtxt('EnergyFile.mdl',skiprows=1);
         a=energy[-1,-1];
- 
+
+# This function evalutes the growth rate for finding the unstable Re number
+# 
+
+
+def firstExt(path,exe,fileList,energyVal,FT,Re,FT2,incre,energyVal2):
+    ReCh(path,fileList[1],Re);
+    FTCh(path,fileList[1],FT);
+    incSolver(exe,fileList);
+    fileName='EnergyFile.mdl';
+    energy=np.loadtxt(fileName,skiprows=1);
+    a=energy[-1,-1];
+    args='mv EnergyFile.mdl '+str(Re)+'.mdl';
+    subprocess.call(args,shell=True);
+    while(a< energyVal):
+        Re=Re+incre;
+        ReCh(path,fileList[1],Re);
+        incSolver(exe,fileList);
+        energy=np.loadtxt('EnergyFile.mdl',skiprows=1);
+        a=energy[-1,-1];
+        args='mv EnergyFile.mdl '+str(Re)+'.mdl';
+        subprocess.call(args,shell=True);
+
+    while(a< energyVal2):
+        FTCh(path,fileList[1],FT2);
+        path2=os.getcwd()+'/2';
+        if not os.path.exists(path2):
+            os.makedirs(path2);
+        os.chdir(path2);
+        f=MaxChk(path);
+        icFile='geom_'+str(f)+'.chk';
+        CopyFile(path,path2,fileList);
+        ICFile(path,path2,icFile,'bd.xml'); 
+        incSolver(exe,fileList);
+        addEnergyFile(path2,str(Re)+'.mdl');
+        bc=MaxChk(path2);
+        ac=MaxChk(path);
+        moveChk(path2,path,ac,bc);                 
+        os.chdir(path);
+        addEnergyFile(path2,str(Re)+'.mdl');
+        os.chdir(path);
+        energy=np.loadtxt(str(Re)+'.mdl',skiprows=1);
+        a=energy[-1,-1];
+
+
+
 def DeStab(path,exe,fileList,energyVal,FT,Re,FT2,incre,energyVal2,N):
     a=[-1,-2]; FileList=['geom.xml','bd.xml','geomBplusD.fld'];
     cwd=os.getcwd();

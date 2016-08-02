@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+    # -*- coding: utf-8 -*-
 """
 Created on Sun Mar 20 17:08:18 2016
 
@@ -302,7 +302,7 @@ def nekFre(inE,obsPointNos,velDir):
     if(len(time)> 3 ):fre.append(time[3]-time[1]);
     return fre, time;
 
-def poptEnRa(file,up,down):
+def poptEnRa(file,up=1e-8,down=1e-22):
     case=Case();
     case.time,case.mod,case.energy = np.loadtxt(file, comments="\x00", skiprows=1, usecols=(0,1,2), unpack=True)
     if(case.time[0] > 100):N1=case.time[0]; case.time[0::2]=case.time[0::2]-N1;case.time[1::2]=case.time[1::2]-N1;
@@ -326,12 +326,16 @@ def poptDir(path1):
         print(newPath);
         file=glob("*.mdl");
         file1=file[0];
-        [a,b]=poptEnRa(file1,1e-8,1e-20);
+        [a,b]=poptEnRa(file1,1e-8,1e-22);
         x.append(a[1]/2);
         y.append(float(f));
         os.chdir(cwd);
-    l2, l1 = zip(*sorted(zip(y, x)));
-    l2=list(l2);l1=list(l1);
+    if(len(x)==0):
+        l1=x;
+        l2=y;
+    else:
+        l2, l1 = zip(*sorted(zip(y, x)));
+        l2=list(l2);l1=list(l1);
     return l1, l2;
 
 
@@ -351,6 +355,7 @@ def poptDirEn(path1,up,down):
         x.append(a[1]/2);
         y.append(float(f));
         os.chdir(cwd);
+    #if(len(path==0):
     l2, l1 = zip(*sorted(zip(y, x)));
     l2=list(l2);l1=list(l1);
     return l1, l2;

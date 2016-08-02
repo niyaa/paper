@@ -9,7 +9,9 @@ from scipy.interpolate import InterpolatedUnivariateSpline;
 class CriticalRe:
     def __init__(self,aa):
         self.bdFname='bd.xml';
-        self.bdFPath='/home/nyadav/symm/0.8/bd';
+        sval=os.getcwd();
+        sval=sval.split('/')[-1]
+        self.bdFPath='/home/nyadav/symm/'+sval+'/bd';
         self.geomFname='geom.xml';
         self.FileList=['geom.xml','bd.xml','geomHplusD.fld'];
         self.RePath=os.getcwd();
@@ -31,7 +33,7 @@ class CriticalRe:
             tree=ET.parse(self.bdFPath+'/'+self.bdFname,OrderedXMLTreeBuilder());
             root=tree.getroot();
             Re=root[1][1][5].text.split('=')[-1];
-            self.ReList.append(int(Re)-0.3*int(Re));
+            self.ReList.append(int(Re)-0.4*int(Re));
             ReNew=float(Re)+float(Re)*4*(abs(beta-0.4));
             self.ReList.append(int(ReNew));
             self.CritRe();
@@ -86,13 +88,18 @@ class CriticalRe:
         r1=b[i];r2=b[i+1];
         print(r1);print(r2);
         print("the value of the ");
-        while(abs(r1-r2)>20):
+        temp=[0];
+        ReCr=funcs.calcReC(a,b);
+        temp.append(ReCr);
+        while(abs(temp[-1]-temp[-2])>1):
             self.ReList=[];
             ReCr=funcs.calcReC(a,b);
-            self.ReList.append(ReCr+0.3*abs(r1-r2));
-            self.ReList.append(ReCr-0.3*abs(r1-r2));
+            self.ReList.append(ReCr+0.1*abs(r1-r2));
+            self.ReList.append(ReCr-0.1*abs(r1-r2));
             self.CritRe();
             print(r1);print(r2);
+            ReCr=funcs.calcReC(a,b);
+            temp.append(ReCr);
             [a,b]=ipVar.poptDir(self.RePath);
             z=np.where(np.diff(np.sign(a)))[0];
             r1=b[z[0]];r2=b[z[0]+1];
@@ -109,7 +116,7 @@ class CriticalRe:
             os.chdir(str(i));
             self.RePath=os.getcwd();
             self.beta=i;
-            self.IG(i,600);
+            #self.IG(i,600);
             self.ReIter();
             os.chdir(self.BetaPath);
     
@@ -121,14 +128,16 @@ class CriticalRe:
         beta=self.betaList[0];
         path=glob('*/');
         path=[float(i.split('/')[0]) for i in beta];
-  #      adjacentB=[i 
+     #   adjacentB=[i 
 
- #       for i in sorted(path):
+    #    for i in sorted(path):
             
-#            adjacentB.append(
+      #      adjacentB.append(
         
-
-
+        
+        
+        
+     
 
 
 
