@@ -3,6 +3,7 @@ sys.path.append('/home/nyadav/pyscr');
 import ipVar, funcs;
 import numpy as np;
 import shutil;
+from glob import glob;
 import os;
 class baseFlow:
     def __init__(self,fileList,filePath,simPara,meshPara):
@@ -68,15 +69,26 @@ class preHoly:
     def __init__(self,filePath,simPath,f=1):
         self.filePath=filePath;
         self.simPath=simPath;
-        [a,b,chkN,energy]=funcs.chkPerUnitTime('bd.xml');
-        args='~/bin/FldAddFld -1 1 geom3D.bse'+'geom_'+str(chkN)+'.chk'+' geomHplusD.fld';
+        os.chdir(self.filePath);
+        if os.path.exists("EnergyFile.mdl"):
+            [a,b,chkN,energy]=funcs.chkPerUnitTime('bd.xml',filePath);
+        else:
+            efile=glob("*.mdl");
+            ee=[float(i.split('.')[0]) for i in efile]
+            ee=max(ee);
+            efile=str(ee)+'.mdl';
+            [a,b,chkN,energy]=funcs.chkPerUnitTime('bd.xml',filePath,efile);
+            
+        print(chkN); 
+        args='~/bin/FldAddFld -1 1 geom3D.bse '+'geom_'+str(int(chkN))+'.chk'+' geomHplusD.fld';
         subprocess.call(args,shell=True);
         E1=np.sqrt(1e-17/energy)*f;
         args='~/bin/FldAddFld 1 '+str(E1)+' geom3D.bse geomHplusD.fld geomHplusD.fld';
         subprocess.call(args,shell=True);
         FileList=['geom.xml','bd.xml','geomHplusD.fld'];
         for i in FileList:
-            shutil.move(filePath+'/'+i,simPath+'/'+i);
+            shutil.copy(filePath+'/'+i,simPath);
+        os.chdir(simPath);
 
         
 

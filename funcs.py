@@ -52,6 +52,22 @@ def simPara(path,fileName,paraList):
         HmCh(path,fileName, paraList[4]);
     if not paraList[5]=='':
         LzCh(path,fileName, paraList[5]);
+    if not paraList[6]=='':
+        EnCh(path,fileName, paraList[6]);
+    if not paraList[7]=='':
+        HiFCh(path,fileName, paraList[7]);
+    if not paraList[8]=='':
+        HiCh(path,fileName, paraList[8]);
+    if not paraList[9]=='':
+        EnFCh(path,fileName,paraList[9]);
+        
+    
+    
+
+
+
+
+
 
 
 def moveChk(CurrentPath,NewPath,i,j):
@@ -73,7 +89,7 @@ def MaxChk(path):
     os.chdir(pwd);
     return j;
 
-def chkPerUnitTime(fileName,path=os.getcwd()):
+def chkPerUnitTime(fileName,path=os.getcwd(),efile='EnergyFile.mdl'):
     FilePath=path+'/'+fileName;
     tree=ET.parse(FilePath,OrderedXMLTreeBuilder());
     root=tree.getroot();
@@ -83,10 +99,10 @@ def chkPerUnitTime(fileName,path=os.getcwd()):
     
     case=Case();
     # Name of the energy file ot be changed for other names 
-    case.time,case.mod,case.energy = np.loadtxt('EnergyFile.mdl', comments="\x00", skiprows=1, usecols=(0,1,2), unpack=True);
+    case.time,case.mod,case.energy = np.loadtxt(efile, comments="\x00", skiprows=1, usecols=(0,1,2), unpack=True);
     tn=case.time[-1];
     chkMax=tn/(ts*chkOut); 
-    [t,e]=extractdata.linearPt('EnergyFile.mdl');
+    [t,e]=extractdata.linearPt(efile);
     
     aa=np.ceil(t/(chkOut*ts));
     j=0;
@@ -96,6 +112,22 @@ def chkPerUnitTime(fileName,path=os.getcwd()):
     energy=e[j];
 
     return 1/(ts*chkOut),chkMax,np.median(aa), energy;
+
+def paramVal(fileName,path=os.getcwd()):
+    FilePath=path+'/'+fileName;
+    tree=ET.parse(FilePath,OrderedXMLTreeBuilder());
+    root=tree.getroot();
+    ft=float(root[1][1][1].text.split('=')[-1]);
+    ts=float(root[1][1][0].text.split('=')[-1]);
+    chkOut=float(root[1][1][3].text.split('=')[-1]);
+
+    Re=float(root[1][1][5].text.split('=')[-1]);
+    LZ=float(root[1][1][8].text.split('=')[-1]);
+
+    para=[ts,ft,chkOut,Re,LZ];
+    
+    return para;
+
 
     
 
@@ -177,11 +209,27 @@ def EnCh(path,fileName,name):
     root=tree.getroot();
     root[3][0][0].text=name;
     tree.write(FilePath);
+
+def EnFCh(path,fileName,name):
+    FilePath=path+'/'+fileName;
+    tree=ET.parse(FilePath,OrderedXMLTreeBuilder());
+    root=tree.getroot();
+    root[3][0][1].text=name+'/TimeStep';
+    tree.write(FilePath);
+
 def HiCh(path,fileName,name):
     FilePath=path+'/'+fileName;
     tree=ET.parse(FilePath,OrderedXMLTreeBuilder());
     root=tree.getroot();
     root[3][1][3].text='\n'+name+'\n';
+    tree.write(FilePath);
+
+
+def HiFCh(path,fileName,name):
+    FilePath=path+'/'+fileName;
+    tree=ET.parse(FilePath,OrderedXMLTreeBuilder());
+    root=tree.getroot();
+    root[3][1][1].text=name;
     tree.write(FilePath);
 
 
@@ -377,7 +425,7 @@ def firstExt(path,exe,fileList,energyVal,FT,Re,FT2,incre,energyVal2):
 # 
 
 
-def firstExt(path,exe,fileList,energyVal,FT,Re,FT2,incre,energyVal2):
+def firstExt2(path,exe,fileList,energyVal,FT,Re,FT2,incre,energyVal2):
     ReCh(path,fileList[1],Re);
     FTCh(path,fileList[1],FT);
     incSolver(exe,fileList);
@@ -394,7 +442,8 @@ def firstExt(path,exe,fileList,energyVal,FT,Re,FT2,incre,energyVal2):
         a=energy[-1,-1];
         args='mv EnergyFile.mdl '+str(Re)+'.mdl';
         subprocess.call(args,shell=True);
-
+    args="mv "+str(Re)+'.mdl'+' EnergyFile.mdl';
+    subprocess.call(args,shell=True);
     while(a< energyVal2):
         FTCh(path,fileList[1],FT2);
         path2=os.getcwd()+'/2';
@@ -406,14 +455,14 @@ def firstExt(path,exe,fileList,energyVal,FT,Re,FT2,incre,energyVal2):
         CopyFile(path,path2,fileList);
         ICFile(path,path2,icFile,'bd.xml'); 
         incSolver(exe,fileList);
-        addEnergyFile(path2,str(Re)+'.mdl');
+        addEnergyFile(path2,'EnergyFile.mdl');
         bc=MaxChk(path2);
         ac=MaxChk(path);
         moveChk(path2,path,ac,bc);                 
         os.chdir(path);
-        addEnergyFile(path2,str(Re)+'.mdl');
+        addEnergyFile(path2,'EnergyFile.mdl');
         os.chdir(path);
-        energy=np.loadtxt(str(Re)+'.mdl',skiprows=1);
+        energy=np.loadtxt('EnergyFile.mdl',skiprows=1);
         a=energy[-1,-1];
 
 

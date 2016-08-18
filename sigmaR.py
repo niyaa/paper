@@ -1,3 +1,8 @@
+import ipVar, funcs, os;
+from output import *;
+from decimal import Decimal;
+import numpy as np;
+
 out=Output();
 cwd=os.getcwd();
 for root, dir, files in os.walk("./"):
@@ -7,7 +12,8 @@ for root, dir, files in os.walk("./"):
             inE=os.path.join(root,file);
             out.Re.append(Decimal(root.split('/')[-1]));
             out.beta.append(Decimal(root.split('/')[-2]));
-            #out.alpha.append(Decimal(root.split('/')[-3]));
+            #out.alpha.append(Decimal(root.split('/')[-4]));
+            out.alpha.append(Decimal(1));
             case=Case();
             os.chdir(root);
             enrFile=glob('*.mdl');
@@ -20,22 +26,13 @@ for root, dir, files in os.walk("./"):
                 t, e=extractdata.extractData(case,case.time[-1], 1e-8, 1e-21);
            
             inE=glob('*.his');inE=inE[0];
-            [a, b]=ipVar.nekFre(inE,1,3);
-            if(len(b)>=3):
-                if(len(enrFile)> 0):
-                    print('hello');
-                    c=[i for i in b if i > t[0]]
-                    if(len(c)>=3):
-                        out.sigmaR.append(c[2]-c[0]);
-                        print(c[2]-c[0])
-                if((len(enrFile)==0)):out.sigmaR.append(b[-1]-b[-3]);
-                if(len(c) < 3):out.sigmaR.append(b[-1]-b[-3]);
-            if(len(b)<3):out.sigmaR.append(0);   
+            [a, b]=ipVar.nekFre3(inE,1,3,-1);
+            out.sigmaR.append(a);   
             os.chdir(cwd);
             
 n=len(out.Re);
 x=np.zeros((n,5),dtype=np.float);
-#x[:,0]=out.alpha[:];
+x[:,0]=out.alpha[:];
 x[:,1]=out.beta[:];
 x[:,2]=out.Re[:];
 x[:,3]=out.sigma[:];

@@ -7,14 +7,18 @@ import ipVar, funcs;
 import numpy as np;
 from scipy.interpolate import InterpolatedUnivariateSpline;
 class CriticalRe:
-    def __init__(self,aa):
+    def __init__(self,aa,cc=' '):
         self.bdFname='bd.xml';
         cwd=os.getcwd();
         sval=cwd.split('/')[-1]
         aval=cwd.split('/')[-2];
-        if(aval=='1'):
-            self.bdFPath='/home/nyadav/symm/'+sval+'/bd';
-        self.bdFPath='/home/nyadav/symm/'+aval+'/'+sval+'/bd';
+        self.bdFPath=cc;
+        if(self.bdFPath==' '):
+            if(float(aval)==1):
+                self.bdFPath='/home/nyadav/symm/'+sval+'/bd';
+            self.bdFPath='/home/nyadav/symm/'+aval+'/'+sval+'/bd';
+        if not (self.bdFPath==' '):
+            self.bdFPath=self.bdFPath+'/'+aval+'/'+sval+'/bd';
         self.geomFname='geom.xml';
         self.FileList=['geom.xml','bd.xml','geomHplusD.fld'];
         self.RePath=os.getcwd();
@@ -48,12 +52,15 @@ class CriticalRe:
                 self.ReList.append(ReNew);
                 self.CritRe(100);
                 [a,b]=ipVar.poptDir(self.RePath);
+                if(max(b) > 7000): break;
             while(all(i>0 for i in a)):
                 self.ReList=[];
                 Re=float(Re)-0.5*(float(Re));
                 self.ReList.append(Re);
                 self.CritRe(100);
                 [a,b]=ipVar.poptDir(self.RePath);
+                if(min(b) <10): break;
+
         else:
             self.ReList=[];
             self.ReList.append(ReNm);
@@ -79,13 +86,14 @@ class CriticalRe:
             self.ReList.append(ReNew);
             self.CritRe(FT);
             [a,b]=ipVar.poptDir(self.RePath);
-
+            if(min(b) <10): break;
         while(all(i < 0 for i in a)):
             self.ReList=[];
             ReNew=float(b[-1])+0.3*float(b[-1]);
             self.ReList.append(ReNew);
             self.CritRe(FT);
-            [a,b]=ipVar.poptDir(self.RePath); 
+            [a,b]=ipVar.poptDir(self.RePath);
+            if(max(b) > 7000): break;
         [a,b]=ipVar.poptDir(self.RePath);
         z=np.where(np.diff(np.sign(a)))[0];
         i=z[0];
@@ -168,9 +176,82 @@ class CriticalRe:
       #      adjacentB.append(
         
         
+    def CreForBeta3(self):
+        os.chdir(self.BetaPath);
+        for i in self.betaList:
+            if not os.path.exists(str(i)):
+                os.makedirs(str(i));
+            os.chdir(str(i));
+            self.RePath=os.getcwd();
+            self.beta=i;
+            os.chdir(self.BetaPath);
+            self.Re1000(8);
+            self.Re100(10);
+            self.Re10(5);
+            self.ReFinal();
+
+
+
+    def Re1000(self,N):
+        for i in range(0,N):
+            self.ReList.append(int(500+i*1000));
+        para=[0.005,50,'2*FinalTime/TimeStep','','',self.beta,'','2*FinalTime/TimeStep','','0.5'];
+        self.CritRe2(para);
+    
+    def Re100(self,N):
+        self.ReList=[];
+        [a,b]=ipVar.poptFile(os.getcwd());
+        re=funcs.calcReC(a,b);
+        a=np.floor(a/1000)*1000;
+        b=np.ceil(a/1000)*1000;
+        c=(b-a)/N;
+        c=int(c);
+        for i in range(0,N):
+            self.ReList.append(int(a+i*c));
+        para=[0.005,100,'2*FinalTime/TimeStep','','',self.beta,'','2*FinalTime/TimeStep','','0.5'];
+        self.CritRe2(para);
+
+    def Re10(self,N):
+        self.ReList=[];
+        [a,b]=ipVar.poptFile(os.getcwd());
+        re=funcs.calcReC(a,b);
+        a=np.floor(a/100)*100;
+        b=np.ceil(a/100)*100;
+        c=(b-a)/N;
+        c=int(c);
+        for i in range(0,N):
+            self.ReList.append(int(a+i*c));
+        para=[0.005,300,'2*FinalTime/TimeStep','','',self.beta,'','2*FinalTime/TimeStep','','1'];
+        self.CritRe2(para);
+  
+    def ReFinal(self):
+        [a,b]=ipVar.poptFile(os.getcwd());
+        re=funcs.calcReC(a,b);
+        re=int(re);
+        self.ReList=[];
+        self.ReList.append(re);
+        path=os.getcwd();
+        if not os.path.exists(re):
+            os.makedirs(re);
+        os.chdir(re);
+        para=[0.005,400,'0.1*FinalTime/TimeStep','','',self.beta,'','0.2/TimeStep','','1'];
+        funcs.CopyFile(path,os.getcwd(),self.FileList);
+        self.CritRe2(para);
+
+
+
         
-        
-     
+    
+    def CritRe2(self,para):
+        for i in self.ReList:
+            para[6]=str(i)+'.mdl';
+            para[3]=i;
+            para[5]=self.beta;
+            funcs.simPara(os.getcwd(),self.FileList[1],para);
+            #funcs.incSolver(self.exe,self.FileList[:-1]);
+            
+            ipVar.incSolverP(self.exe,self.FileList[:-1]);
+
 
 
 

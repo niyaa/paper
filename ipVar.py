@@ -38,38 +38,6 @@ def PbsChange(path,name):
 
     subprocess("chmod" "u+x" "/home/nyadav/pbs/abc.sh",shell=True);
                 
-
-def ConPara(fileName):
-    tree=ET.parse(fileName);
-    root=tree.getroot();
-
-        #Reynolds number
-    a=root[1][1][5].text;
-    a=a.split('=');
-    a=a[1];
-    RE=float(a);
-
-        #Final Time
-    a=root[1][1][1].text;
-    a=a.split('=');
-    a=a[1];
-    FT=float(a);
-
-        #CheckSteps
-    a=root[1][1][3].text;
-    a=a.split('=');
-    a=a[1];
-    IO=float(a);
-
-        #TimeStep]
-    a=root[1][1][0].text;
-    a=a.split('=');
-    a=a[1];
-    TS=float(a);
-    ChkN=FT/(TS*IO);
-    ChkN=int(ChkN);
-    return FT, TS, IO, RE, ChkN;
-    
 def moveChk(CurrentPath,NewPath,ChkN):
     for files in glob(CurrentPath+'/*.chk'):
         a= os.path.basename(files);b=a.split('.')[0].split('_')[1];
@@ -106,6 +74,8 @@ def sigma(path):
         case.popt=pt[1]/2.0;
         x.append(int(case.Re));
         y.append((pt[1]/2.0));
+    if(all(i<0 for i in y)):
+        return 0, 0, 0;
     print('the Reynolds number listi\n');
     print(x);
     print('the growth rate list \n');
@@ -116,53 +86,7 @@ def sigma(path):
         print("the ReC is not defined for \t");
         ReC=-1;
     return x,y, ReC
-            #return x,y;
-        
-    # ReC=calcReC(x,y);		#f=UnivariateSpline(x,y,s=0);
-    #return x,y,ReC;
 
-def ReSimulation(FilesPath,simPath,ReList,Beta,exe,filelist,itN):
-    for R in ReList:
-        os.chdir(simPath);
-        if not os.path.exists(str(R)):
-            os.makedirs(str(R));
-        pathR =simPath+ '/' +str(R);
-        os.chdir(pathR);
-        shutil.copy((FilesPath+'/1000.xml'),pathR);
-        shutil.copy((FilesPath+'/geom.xml'),pathR);
-        shutil.copy((FilesPath+'/geomHplusD.fld'),pathR);
-        [FT, TS, IO, RE, ChkN]= ConPara('1000.xml');
-        tree=ET.parse('1000.xml',OrderedXMLTreeBuilder());
-        root=tree.getroot();
-        Re='Re='+str(R);
-        root[1][1][5].text=Re;
-        lz='LZ='+str((np.pi*2/(Beta)));
-        root[1][1][8].text=lz
-        tree.write('1000.xml');
-        incSolver(exe,filelist);
-        if(CheckEnergy('EnergyFile.mdl')):
-            path2=pathR+'/2';
-            if not os.path.exists(path2):            
-                os.makedirs(path2);
-            shutil.copy((pathR+'/1000.xml'),path2);
-            shutil.copy((pathR+'/geom.xml'),path2);
-        count=0;iter=1;
-        while(CheckEnergy('EnergyFile.mdl')and iter<itN):
-            os.chdir(path2);
-            count=count+int(ChkN);
-            ICFile('1000.xml',count,pathR,path2);
-            incSolver(exe,filelist);	   
-            subprocess.call(['sed "1,3d" EnergyFile.mdl > abc.txt'],shell=True);
-            subprocess.call('cat ../EnergyFile.mdl abc.txt > ../abc.txt',shell=True);
-            moveChk(path2,pathR,ChkN);
-            iter=iter+1;
-            os.chdir(pathR);
-            os.rename('abc.txt','EnergyFile.mdl');
-            shutil.rmtree('2/');   
-    os.chdir(simPath); 
-#if __name__ == '__main__':
-#   f=sys.argv[1];
- #   ipVar(f)
 
 
 def incSolver(exe,filelist):
@@ -264,6 +188,11 @@ def nsvalues(path1):
     for i in range(0,len(YX)):
         yy.append(YX[i][0]);
         xx.append(YX[i][1]);
+    c=(xx,yy);
+    c=np.asarray(c);
+    sVal=path1.split('/')[-1];
+    alpha=path1.split('/')[-2];
+    np.savetxt('ns.'+sVal+'.'+alpha+'.txt',c.T);
 
     return xx, yy;
 
@@ -285,22 +214,103 @@ def nsplot(Re ,beta):
 
 
 
-def nekFre(inE,obsPointNos,velDir):
+def nekFre(inE,obsPointNos,velDiri):
     #skipRows number of points obspoints Number =+1 
     time=[]; fre=[];
     a=np.loadtxt(inE,skiprows=obsPointNos+1);
     x=a[:,0];
     y=a[:,velDir];
+    del a;
     f=interp1d(x,y,kind='cubic');
 
-    xnew=np.linspace(x[0],x[-1],len(a[:,0])*100);
+    xnew=np.linspace(x[0],x[-1],len(a[:,0]));
     ynew=f(xnew);
 
     for i in range(1,len(ynew)):
         if(np.sign(ynew[i-1])*np.sign(ynew[i]) < 0):
             time.append(xnew[i]);
-    if(len(time)> 3 ):fre.append(time[3]-time[1]);
+    if(len(time)> 3 ):fre.append(time[-1]-time[-3]);
     return fre, time;
+
+
+def nekFre3(inE,obsPointNos,stp,points):
+    #skipRows number of points obspoints Number =+1 
+    time=[]; fre=[];
+    a=np.loadtxt(inE,skiprows=obsPointNos+1);
+    #[ts,ft,a,d,e]=funcs.paramVal('bd.xml');
+        
+    x=a[stp:points,0];
+    y=a[stp:points,3];
+    del a;
+    if(len(x) <3000):
+        f=interp1d(x,y,kind='cubic');
+        xnew=np.linspace(x[0],x[-1],len(x));
+        ynew=f(xnew);
+    elif(len(x)>=3000):
+        xnew=x;
+        ynew=y;
+
+    for i in range(1,len(ynew)):
+        if(np.sign(ynew[i-1])*np.sign(ynew[i]) < 0):
+            time.append(xnew[i]);
+    if(len(time)> 3 ):
+        for i in range(0,len(time)-2):
+            fre.append(time[i+2]-time[i]);
+            if(len(fre)%2==0):ans=fre[int(len(fre)/2)];
+            if(len(fre)%2!=0 and len(fre)>2):ans=fre[int(len(fre)/2+1)];
+        return ans, time;
+    if(len(time)==3):
+        ans=time[2]-time[0];
+        return ans, time;
+    if(len(time)<3 and len(time)>1):
+        ans=time[1]-time[0];
+        return ans,time;
+    if(len(time)<=1):
+        return 0,0;
+
+def nekFre2(inE,obsPointNos,velDir,enFilePath):
+    #skipRows number of points obspoints Number =+1
+    [t,e]=extractdata.linearPt('EnergyFile.mdl')
+    enFile=os.getcwd()+'/fileName';
+    aa=np.loadtxt(enFile,skiprows=1,usecols=(0,1));
+    tS=aa[0,0]; tE=aa[-1,0];
+    t=t-tS;
+    del aa;
+    time=[]; fre=[];
+    a=np.loadtxt(inE,skiprows=obsPointNos+1,usecols=(0,velDir));
+    x=a[:,0]-a[0,0];
+    y=a[:,1];
+    del a;
+    aa=[];cc=[];
+    for i in range(0,len(y)-1):
+        if(y[i]*y[i+1]<0): 
+            aa.append(x[i]);
+            cc.append(i);
+    tree=ET.parse(enFilePath,OrderedXMLTreeBuilder());      
+    root=tree.getroot();
+    ts=float(root[1][1][0].text.split('=')[-1]);
+    hsP=float(root[3][1][1].text);
+    
+    aa=np.array(aa)*ts/hsp;
+    hisStep=aa[-1]-aa[-3];
+    linearRange=t[-1]-t[0];
+    if(hisStep < linearRange):
+        i=np.where(aa>t[0]);
+        i=(i[0][0]-1);
+        j=np.where(aa<t[-1]);
+        j=j[0][-1];
+        xx=x[cc[i]:cc[j]]; 
+        yy=x[cc[i]:cc[j]];
+        f=interp1d(xx,yy,kind='cubic');
+        xnew=np.linspace(xx[0],xx[-1],5*len(xx));
+        ynew=f(xnew);
+        for i in range(1,len(ynew)):
+            if(np.sign(ynew[i-1])*np.sign(ynew[i]) < 0):
+                time.append(xnew[i]);
+        if(len(time)> 3 ):fre.append(time[3]-time[1]);
+        return fre, time;
+
+
 
 def poptEnRa(file,up=1e-8,down=1e-22):
     case=Case();
@@ -314,8 +324,9 @@ def poptEnRa(file,up=1e-8,down=1e-22):
     return popt, perr;   
 
 
-def poptDir(path1):
-    cwd=path1;
+def poptDir(path):
+    os.chdir(path)
+    cwd=path;
     path=glob('*/');
     x=[];y=[];
     for i in path:
@@ -338,6 +349,24 @@ def poptDir(path1):
         l2=list(l2);l1=list(l1);
     return l1, l2;
 
+def poptFile(path):
+    os.chdir(path)
+    cwd=path;
+    path=glob('*.mdl');
+    x=[];y=[];
+    for i in path:
+        f=i.split('.')[0];
+        [a,b]=poptEnRa(i);
+        x.append(a[1]/2);
+        y.append(float(f));
+    os.chdir(cwd);
+    if(len(x)==0):
+        l1=x;
+        l2=y;
+    else:
+        l2, l1 = zip(*sorted(zip(y, x)));
+        l2=list(l2);l1=list(l1);
+    return l1, l2;
 
 def poptDirEn(path1,up,down):
     cwd=path1;
@@ -361,3 +390,16 @@ def poptDirEn(path1,up,down):
     return l1, l2;
 
 
+def DelReDirWithLessTime(path,timeLimit):
+    os.chdir(path);
+    cwd=os.getcwd();
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            if(file.endswith(".mdl")):
+                inE=os.path.join(root,file);
+                a=np.loadtxt(inE,skiprows=1);
+                if(a[-1,0] < a[0,0]+timeLimit):
+                    print(inE);
+                    print(root);
+                    args='rm -r '+root;
+                    subprocess.call(args,shell=True);

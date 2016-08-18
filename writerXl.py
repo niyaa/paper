@@ -69,3 +69,15 @@ def ns4diffs(filename,alpha,betaList):
         fileName='ns.'+str(alpha)+'.'+str(i)+'.'+filename+'.xlsx'
         ns(fileName,a,b);
         os.chdir(cwd);
+
+def nstxt(betaList):
+    cwd=os.getcwd();
+    for i in betaList:
+        pathA=cwd+'/'+str(i);
+        os.chdir(pathA);
+        [a,b]=ipVar.nsvalues(os.getcwd());
+        c=(a,b);
+        d=np.asarray(c);
+        np.savetxt('ns'+str(i)+'.txt',d.T);
+        os.chdir(cwd);
+
