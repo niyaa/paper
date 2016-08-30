@@ -4,5 +4,16 @@ class Output(object):
         self.alpha=[];
         self.S=[];
         self.sigma=[];
-        self.beta=[];
         self.sigmaR=[];
+        self.beta=[]
+        self.Wmax=[];
+        self.Wmin=[];
+        self.Wdif=[];
+        self.qz=[];
+        self.area=[];
+        self.W=[];
+        self.X=[];
+        self.Y=[];
+        self.Wroot=[];
+        self.shIn=[];
+        self.spoint=[];

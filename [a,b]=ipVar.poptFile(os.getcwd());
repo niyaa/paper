@@ -43,31 +43,29 @@ class CriticalRe:
             self.RePath=os.getcwd();
             self.beta=i;
             funcs.CopyFile(self.BetaPath,os.getcwd(),self.FileList);
-            #self.ReExt([80,150,200],40);
-            #self.Re1000(10,50);
-            #self.Re100(10,50);
-            self.ReExt([50],40);
-            self.Re10(8,50);
-            self.ReFinal2(100);
-            #self.ReExt([110,120],200);
+            #os.chdir(self.BetaPath);
+            #self.Re1000(8);
+            self.Re100(9);
+            self.Re10(5);
+            self.ReFinal2();
             os.chdir(self.BetaPath);
 
 
 
-    def Re1000(self,N,time):
+    def Re1000(self,N):
         self.ReList=[];
         self.ReList.append(50);
         for i in range(0,N):
-            self.ReList.append(int(300+i*1000));
-        para=[0.005,time,'2*FinalTime/TimeStep','','',self.beta,'','2*FinalTime/TimeStep',str(np.pi/self.alpha)+' 0 0 ','0.5'];
+            self.ReList.append(int(50+i*1000));
+        para=[0.005,50,'2*FinalTime/TimeStep','','',self.beta,'','2*FinalTime/TimeStep','','0.5'];
         self.CritRe2(para);
     
-    def Re100(self,N,time):
+    def Re100(self,N):
         self.ReList=[];
         [a,b]=ipVar.poptFile(os.getcwd());
         xx=(i for i in range(0,len(a)) if a[i] > 0 ).next();
-        self.ReList.append(b[xx]-100);
-        para=[0.005,150,'2*FinalTime/TimeStep','','',self.beta,'','2*FinalTime/TimeStep',str(np.pi/self.alpha)+' 0 0 ','0.5'];
+        self.ReList.apppend(b[xx]);
+        para=[0.005,150,'2*FinalTime/TimeStep','','',self.beta,'','2*FinalTime/TimeStep','','0.5'];
         self.CritRe2(para);
         self.ReList=[];
 
@@ -78,10 +76,10 @@ class CriticalRe:
         c=int(c);
         for i in range(1,N):
             self.ReList.append(int(a+i*c));
-        para=[0.005,time,'2*FinalTime/TimeStep','','',self.beta,'','2*FinalTime/TimeStep',str(np.pi/self.alpha)+' 0 0 ','0.5'];
+        para=[0.005,50,'2*FinalTime/TimeStep','','',self.beta,'','2*FinalTime/TimeStep','','0.5'];
         self.CritRe2(para);
 
-    def Re10(self,N,time):
+    def Re10(self,N):
         self.ReList=[];
         [a,b]=ipVar.poptFile(os.getcwd());
         xx=[];
@@ -92,7 +90,7 @@ class CriticalRe:
             self.ReList.append(b[xx[1]]-10);
             self.ReList.append(b[xx[2]]+10);
             self.ReList.append(b[xx[2]]-10);
-        para=[0.005,150,'2*FinalTime/TimeStep','','',self.beta,'','2*FinalTime/TimeStep',str(np.pi/self.alpha)+' 0 0 ','0.5'];
+        para=[0.005,150,'2*FinalTime/TimeStep','','',self.beta,'','2*FinalTime/TimeStep','','0.5'];
         self.CritRe2(para);
         self.ReList=[];
 
@@ -105,11 +103,9 @@ class CriticalRe:
         c=int(c);
         for i in range(1,N):
             self.ReList.append(int(a+i*c));
-        para=[0.005,time,'2*FinalTime/TimeStep','','',self.beta,'','2*FinalTime/TimeStep',str(np.pi/self.alpha)+' 0 0 ','1'];
+        para=[0.005,100,'2*FinalTime/TimeStep','','',self.beta,'','2*FinalTime/TimeStep','','1'];
         self.CritRe2(para);
-
-
-
+  
     def ReFinal(self):
         [a,b]=ipVar.poptFile(os.getcwd());
         re=funcs.calcReC(a,b);
@@ -125,25 +121,21 @@ class CriticalRe:
         self.CritRe2(para);
         
 
-    def ReFinal2(self,time):
+    def ReFinal2(self):
         [a,b]=ipVar.poptFile(os.getcwd());
         re=funcs.calcReC(a,b);
         re=int(re);
         self.ReList=[];
         self.ReList.append(re);
-        para=[0.005,time,'0.1*FinalTime/TimeStep','','',self.beta,'','0.2/TimeStep',str(18+np.pi/self.alpha)+' 0 0 ','1'];
+        para=[0.005,150,'0.1*FinalTime/TimeStep','','',self.beta,'','0.2/TimeStep',str(np.pi/self.alpha)+' 0 0 ','1'];
         self.CritRe2(para);
 
 
-    def ReExt(self,rlist,time):
-        self.ReList=rlist;
-        para=[0.005,time,'2*FinalTime/TimeStep','','',self.beta,'','2*FinalTime/TimeStep',str(np.pi/self.alpha)+' 0 0 ','0.5'];
-        self.CritRe2(para);
         
     
     def CritRe2(self,para):
         for i in self.ReList:
-            para[6]=str(self.alpha)+'-'+str(self.Sval)+'-'+str(self.beta)+'-'+str(int(i))+'-.mdl';
+            para[6]=str(self.alpha)+'.'+str(self.Sval)+'.'+str(self.beta)+'.'+str(i)+'.mdl';
             para[3]=i;
             para[5]=self.beta;
             funcs.simPara(os.getcwd(),self.FileList[1],para);

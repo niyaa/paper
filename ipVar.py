@@ -17,6 +17,8 @@ import subprocess;
 from scipy.interpolate import UnivariateSpline;
 import numpy as np;
 from scipy.interpolate import interp1d;
+import funcs;
+import color;
 
 def CheckEnergy(filename):
     energy = np.loadtxt(filename,skiprows=1);
@@ -233,20 +235,20 @@ def nekFre(inE,obsPointNos,velDiri):
     return fre, time;
 
 
-def nekFre3(inE,obsPointNos,stp,points):
+def nekFre3(inE,obsPointNos,stp,points,vel=3):
     #skipRows number of points obspoints Number =+1 
     time=[]; fre=[];
     a=np.loadtxt(inE,skiprows=obsPointNos+1);
     #[ts,ft,a,d,e]=funcs.paramVal('bd.xml');
         
     x=a[stp:points,0];
-    y=a[stp:points,3];
+    y=a[stp:points,vel];
     del a;
-    if(len(x) <3000):
+    if(len(x) <2000):
         f=interp1d(x,y,kind='cubic');
-        xnew=np.linspace(x[0],x[-1],len(x));
+        xnew=np.linspace(x[0],x[-1],100*len(x));
         ynew=f(xnew);
-    elif(len(x)>=3000):
+    elif(len(x)>=2000):
         xnew=x;
         ynew=y;
 
@@ -258,7 +260,7 @@ def nekFre3(inE,obsPointNos,stp,points):
             fre.append(time[i+2]-time[i]);
             if(len(fre)%2==0):ans=fre[int(len(fre)/2)];
             if(len(fre)%2!=0 and len(fre)>2):ans=fre[int(len(fre)/2+1)];
-        return ans, time;
+        return ans, time, 2*np.pi/ans;
     if(len(time)==3):
         ans=time[2]-time[0];
         return ans, time;
@@ -312,13 +314,19 @@ def nekFre2(inE,obsPointNos,velDir,enFilePath):
 
 
 
-def poptEnRa(file,up=1e-8,down=1e-22):
+def poptEnRa(file,up=1e-8,down=1e-20):
     case=Case();
     case.time,case.mod,case.energy = np.loadtxt(file, comments="\x00", skiprows=1, usecols=(0,1,2), unpack=True)
     if(case.time[0] > 100):N1=case.time[0]; case.time[0::2]=case.time[0::2]-N1;case.time[1::2]=case.time[1::2]-N1;
-    case.t,case.e=extractdata.extractData(case,case.time[-1], up, down);
+    try:
+        case.t,case.e=extractdata.extractData(case,case.time[-1], up, down);
+    except:
+        return [], 0 ;
     print(case.t);
-    popt, pcov = curve_fit(func, case.t, case.e, p0=(1e-15, 1e-2))
+    try:
+        popt, pcov = curve_fit(func, case.t, case.e, p0=(1e-15, 1e-2))
+    except:
+        return [], 0;
     perr = np.sqrt(np.diag(pcov))[0]+np.sqrt(np.diag(pcov))[1] ;
     print(popt[1]/2.0);
     return popt, perr;   
@@ -337,7 +345,7 @@ def poptDir(path):
         print(newPath);
         file=glob("*.mdl");
         file1=file[0];
-        [a,b]=poptEnRa(file1,1e-8,1e-22);
+        [a,b]=poptEnRa(file1,1e-8,1e-20);
         x.append(a[1]/2);
         y.append(float(f));
         os.chdir(cwd);
@@ -349,16 +357,67 @@ def poptDir(path):
         l2=list(l2);l1=list(l1);
     return l1, l2;
 
-def poptFile(path):
-    os.chdir(path)
+def nsFile(path):
+    os.chdir(path);
     cwd=path;
-    path=glob('*.mdl');
+    path1=glob('*/');
+    aa=[];
+    bb=[];
+    for i in path1:
+        os.chdir(i);
+        
+def nsFile(path):
+    os.chdir(path)
+    col=color.color();
+    cwd=path;
+    p1=glob("*/");
+    aa=[];bb=[];cc=[];dd=[];ee=[];
+    for i in p1:
+        os.chdir(i);
+        [a,b]=poptFile(os.getcwd());
+        try:
+            c=funcs.calcReC(a,b);
+            if(c>0):
+                bb.append(c);
+                aa.append(float(i.split('/')[0]));  
+        except:
+            args='The Critical Reynolds can not be found for '+i;
+            print col.YELLOW + args+ col.END;
+            cc.append(float(i.split('/')[0]));
+            dd.append(a);
+            ee.append(b);
+        os.chdir(cwd);
+
+    l2, l1 = zip(*sorted(zip(aa, bb)));
+    l2=list(l2);l1=list(l1);
+    c=(l2,l1)
+    c=np.asarray(c);
+    sVal=cwd.split('/')[-1];
+    alpha=cwd.split('/')[-2];
+    np.savetxt('ns.'+sVal+'.'+alpha+'.txt',c.T);
+    print(col.DARKCYAN+'The Critical Reynolds can not be found for '+str(cc)+col.END);
+
+    print(col.CYAN+'The corresponding growth rates \t'+col.END);
+    print(col.PURPLE+'Reynolds  Number '+col.END);
+    for i in range(0,len(dd)):
+        c=(dd[i],ee[i]);
+        c=np.asarray(c);
+        print(col.CYAN+str(c.T[:,0])+col.END);
+        print(col.PURPLE+str(c.T[:,1])+col.END);
+    return l2, l1;
+
+
+
+def poptFile(path=os.getcwd()):
+    cwd=os.getcwd();
+    path1=glob('*.mdl');
     x=[];y=[];
-    for i in path:
-        f=i.split('.')[0];
+    for i in path1:
+        f=i.split('-')[-2];
         [a,b]=poptEnRa(i);
-        x.append(a[1]/2);
-        y.append(float(f));
+        if not (len(a) ==0 and b ==0):
+            x.append(a[1]/2);
+            y.append(float(f));
     os.chdir(cwd);
     if(len(x)==0):
         l1=x;
