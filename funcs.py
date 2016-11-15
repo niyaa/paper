@@ -73,8 +73,9 @@ def simPara(path,fileName,paraList):
 def moveChk(CurrentPath,NewPath,i,j):
     for k in range (1,j+1):
         d='geom_'+str(k)+'.chk';        
-        b=i+k;c='geom_'+str(b)+'.chk';shutil.copy(CurrentPath+'/'+d,NewPath+'/'+c);
-
+        b=i+k;c='geom_'+str(b)+'.chk';
+        arg='mv '+CurrentPath+'/'+d+' '+NewPath+'/'+c;
+        subprocess.call(arg,shell=True);
 def func(x, a, b):
         return a*np.exp(b*x);
 
@@ -147,8 +148,13 @@ def FaF(exe,filelist,a,b):
 
 def ICFile(path1,path2,chkStr,CondFile):
     if not (path1 == path2):
-    	shutil.copy((path1+'/'+chkStr),path2);
-    os.rename(chkStr,'IC.bse');
+        if not (os.path.isdir(path1+'/'+chkStr)):
+    	    shutil.copy((path1+'/'+chkStr),path2);
+        if (os.path.isdir(path1+'/'+chkStr)):
+            args='cp -r '+path1+'/'+chkStr+' '+path2;
+            subprocess.call(args,shell=True);
+    args='mv '+chkStr+' IC.bse';
+    subprocess.call(args,shell=True); 
     tree=ET.parse(path2+'/'+CondFile,OrderedXMLTreeBuilder());
     root=tree.getroot();
     root[1][6][0].set('FILE','IC.bse');
@@ -409,7 +415,9 @@ def firstExt(path,exe,fileList,energyVal,FT,Re,FT2,incre,energyVal2):
         f=MaxChk(path);
         icFile='geom_'+str(f)+'.chk';
         CopyFile(path,path2,fileList);
-        ICFile(path,path2,icFile,'bd.xml'); 
+        ICFile(path,path2,icFile,'bd.xml');
+        subprocess.call('rm *.chk',shell=True);
+        subprocess.call('rm ../*.chk',shell=True);
         incSolver(exe,fileList);
         addEnergyFile(path2,'EnergyFile.mdl');
         bc=MaxChk(path2);

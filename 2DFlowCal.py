@@ -50,19 +50,20 @@ for i in path:
     for i in path1:
         os.chdir(i);
         os.chdir('b');
-        if not os.path.exists(os.getcwd()+'/geom.vtu'):
-            print(os.getcwd());
+        print(os.getcwd());
+        if not os.path.exists(os.getcwd()+'/geom1.vtu'):
             subprocess.call('rm geom.vtu',shell=True);
-        arg='XmlToVtk geom.xml';
-        subprocess.call(arg,shell=True);
-        arg='mv geom.vtu geom1.vtu';
-        subprocess.call(arg,shell=True);
-        
-        i=funcs.MaxChk(os.getcwd());
-        arg='FieldConvert geom.xml geom.fld geom.vtu';
-        
-        try:
+            subprocess.call('rm geom1.vtu',shell=True);
+            arg='XmlToVtk geom.xml';
             subprocess.call(arg,shell=True);
+            arg='mv geom.vtu geom1.vtu';
+            subprocess.call(arg,shell=True);
+        
+        if not os.path.exists(os.getcwd()+'/geom.vtu'):
+            i=funcs.MaxChk(os.getcwd());
+            arg='FieldConvert geom.xml geom.fld geom.vtu';
+            subprocess.call(arg,shell=True);
+            print(os.getcwd())
         os.chdir(sPath);
     os.chdir(aPath);
 
@@ -133,9 +134,11 @@ for i in path:
     os.chdir(aPath);
 f.close();
 
-a=np.zeros((152,3),dtype=np.float);
-f=open('obj.p','rb');
-for i in range(0,152):
+
+Nobj=188;
+a=np.zeros((Nobj,3),dtype=np.float);
+f=open('obejNew.p','rb');
+for i in range(0,Nobj):
     out=pickle.load(f);
     a[i,0]=out.alpha[0];
     a[i,1]=out.S[0];
@@ -154,15 +157,30 @@ S=set(out.S);
 #calculate the length of the dumped object
 i=1;
 f=open('obejNew.p','rb');
-for i in range(0,152):
+for i in range(0,1000):
     out=pickle.load(f);
     i=i+1;
     print(i)
 f.close()
- 
+
+
+area=[];S=[]; qz=[];
+f=open('obejNew.p','rb');
+for i in range(0,188):
+    out=pickle.load(f);
+    print(out.alpha);
+    if(out.alpha[0]==1.0):
+        print(out.alpha[0]);
+        S.append(out.S[0]);
+        area.append(out.area[0]);
+        qz.append(out.qz[0]);
+f.close();
+
+    
  
 
 for i in alpha:
+
     xx=out.S[out.alpha==i];
     yy=out.qz[out.alpha==i];
     

@@ -10,9 +10,9 @@ for i in path:
     os.chdir(i);
     S.append(float(i.split('/')[0]));
     try:
-        [a,b]=ipVar.nsvalues(os.getcwd());
-        f=interpolate.interp1d(b,a);
-        xnew=np.linspace(min(b),max(b),10000);
+        [a,b]=ipVar.nsFile(os.getcwd());
+        f=interpolate.interp1d(a,b);
+        xnew=np.linspace(min(a),max(a),10000);
         ynew=f(xnew);
         ReMin.append(min(ynew));
         m=min(ynew);

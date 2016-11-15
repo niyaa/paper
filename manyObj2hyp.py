@@ -1,4 +1,4 @@
-import manySim3;
+import manySim3hyp;
 import sys;
 import os;
 import subprocess;
@@ -15,5 +15,5 @@ if not os.path.exists(os.getcwd()+'/bd.xml'):
     subprocess.call(args,shell=True); 
 alpha=float(cwd.split('/')[-2]);
 sval=float(cwd.split('/')[-1]);
-b=manySim3.CriticalRe(a,alpha,sval)
+b=manySim3hyp.CriticalRe(a,alpha,sval)
 b.CreForBeta3();

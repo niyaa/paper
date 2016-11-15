@@ -1,28 +1,14 @@
-import subprocess;
+import manySim3hyp;
+import sys;
 import os;
-from glob import glob;
+import subprocess;
 
-print(os.getcwd());
-subprocess.call('ls -al',shell=True);
-
-def funC():
-    path=glob('*/');
-    if(len(path)>0):
-        return len(path)
-    if(len(path)==0):
-        return(os.getcwd());
-
-
-def funA():
-    print('This is function A \n ');
-
-def funB():
-    print('This is the function B \n');
-
-
-def funD(a):
-    if(a==0):
-        print('a is zero\n');
-    if(a>1):
-        print('a is not zero \n');
+first_arg=sys.argv[1];
+a=[];
+a.append(float(first_arg));
+print(a)
+cwd=os.getcwd();
+alpha=float(cwd.split('/')[-2]);
+sval=float(cwd.split('/')[-1]);
+os.chdir(str(a[0]));
 

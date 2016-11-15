@@ -82,7 +82,7 @@ class preHoly:
         print(chkN); 
         args='~/bin/FldAddFld -1 1 geom3D.bse '+'geom_'+str(int(chkN))+'.chk'+' geomHplusD.fld';
         subprocess.call(args,shell=True);
-        E1=np.sqrt(1e-16/energy)*f;
+        E1=np.sqrt(1e-18/energy)*f;
         args='~/bin/FldAddFld 1 '+str(E1)+' geom3D.bse geomHplusD.fld geomHplusD.fld';
         subprocess.call(args,shell=True);
         FileList=['geom.xml','bd.xml','geomHplusD.fld'];

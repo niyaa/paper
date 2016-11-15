@@ -16,14 +16,14 @@
 
         <PARAMETERS>
           <P>TimeStep =0.005</P>
-          <P>FinalTime =100</P>
+          <P>FinalTime =150</P>
           <P> NumSteps      = FinalTime/TimeStep </P>
-          <P>IO_CheckSteps =0.1*FinalTime/TimeStep</P>
+          <P>IO_CheckSteps =FinalTime/TimeStep</P>
           <P> IO_InfoSteps   = 500       </P>
-          <P>Re=227</P>
+          <P>Re=2000</P>
           <P> Kinvis        = 1/Re   </P>
           <P> HomModesZ      = 4        </P>
-          <P>LZ=5.98398600684</P>
+          <P>LZ=14.9599650171</P>
         </PARAMETERS>
     
         <VARIABLES>
@@ -79,15 +79,15 @@
 
     <FILTERS>
         <FILTER TYPE="ModalEnergy">
-	        <PARAM NAME="OutputFile">2.0-0.2-1.05-227-.mdl</PARAM>
-            <PARAM NAME="OutputFrequency">1/TimeStep</PARAM>
+	        <PARAM NAME="OutputFile">1.0-0.6-0.44-108-.mdl</PARAM>
+            <PARAM NAME="OutputFrequency">0.5/TimeStep</PARAM>
         </FILTER>
        <FILTER TYPE="HistoryPoints">
           <PARAM NAME="OutputFile">TimeValues</PARAM>
-          <PARAM NAME="OutputFrequency">0.2/TimeStep</PARAM>
+          <PARAM NAME="OutputFrequency">0.1/TimeStep</PARAM>
           <PARAM NAME="OutputPlane">2</PARAM>
           <PARAM NAME="Points">
-0 0 0 
+3.14159265359 0 0 
 </PARAM>
                 </FILTER>
 

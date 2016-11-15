@@ -26,7 +26,20 @@ def CheckEnergy(filename):
     if((a > 1e-9) or ( a < 1e-20)):   return 0;
     else: return 1;
 
-def PbsChange(path,name):
+def CheckEnergySat(filename):
+    case=Case();
+    case.time, case.mod, case.energy = np.loadtxt(filename,  comments="\x00", skiprows=1, usecols=(0,1,2), unpack=True);
+    mm=set(case.mod);
+    j=0;
+    for i in mm:
+        time=case.time[case.mod==i];
+        en=case.energy[case.mod==i];
+        print(en[-1]);
+        if(en[-1]>0):j=j+1;
+    if(j>10):return 1;
+    return 0;
+
+                   
     os.chdir('/home/nyadav/pbs');
     f1=open('/home/nyadav/pbs/jobBezmpi.sh','r');
     d=f1.readlines();
@@ -158,10 +171,8 @@ def pbs(rse,name,module,wd,exe):
     f=open('pbs.sh','w');
     d=[];
     d.append('#!/bin/bash\n');
-    d.append('#PBS -l '+rse+',walltime=05:00:00:00\n');
+    d.append('#PBS -l '+rse+',walltime=15:00:00:00\n');
     d.append('#PBS -N '+name+'\n');
-    d.append('#PBS -M nyadav@meil.pw.edu.pl\n');
-    d.append('#PBS -m abe\n');
     d.append(module+'\n');
     d.append('cd '+wd+'\n');
     for i in exe:
@@ -235,10 +246,10 @@ def nekFre(inE,obsPointNos,velDiri):
     return fre, time;
 
 
-def nekFre3(inE,obsPointNos,stp,points,vel=3):
+def nekFre3(inE,obsP,stp=0,points=-1,vel=3):
     #skipRows number of points obspoints Number =+1 
     time=[]; fre=[];
-    a=np.loadtxt(inE,skiprows=obsPointNos+1);
+    a=np.loadtxt(inE,skiprows=obsP+1);
     #[ts,ft,a,d,e]=funcs.paramVal('bd.xml');
         
     x=a[stp:points,0];
@@ -265,7 +276,7 @@ def nekFre3(inE,obsPointNos,stp,points,vel=3):
         ans=time[2]-time[0];
         return ans, time;
     if(len(time)<3 and len(time)>1):
-        ans=time[1]-time[0];
+        ans=(time[1]-time[0])*2;
         return ans,time;
     if(len(time)<=1):
         return 0,0;

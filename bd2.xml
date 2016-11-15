@@ -16,9 +16,9 @@
 
         <PARAMETERS>
           <P>TimeStep =0.005</P>
-          <P>FinalTime =150</P>
+          <P>FinalTime =50</P>
           <P> NumSteps      = FinalTime/TimeStep </P>
-          <P>IO_CheckSteps =0.1*FinalTime/TimeStep</P>
+          <P>IO_CheckSteps =FinalTime/TimeStep</P>
           <P> IO_InfoSteps   = 500       </P>
           <P>Re=108</P>
           <P> Kinvis        = 1/Re   </P>
@@ -84,7 +84,7 @@
         </FILTER>
        <FILTER TYPE="HistoryPoints">
           <PARAM NAME="OutputFile">TimeValues</PARAM>
-          <PARAM NAME="OutputFrequency">0.2/TimeStep</PARAM>
+          <PARAM NAME="OutputFrequency">0.1/TimeStep</PARAM>
           <PARAM NAME="OutputPlane">2</PARAM>
           <PARAM NAME="Points">
 3.14159265359 0 0 

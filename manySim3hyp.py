@@ -2,6 +2,7 @@ import os;
 from MonkeyPatch import *;
 import xml.etree.ElementTree as ET;
 import sys;
+import subprocess;
 sys.path.append('/home/nyadav/pyscr');
 import ipVar, funcs;
 import numpy as np;
@@ -26,7 +27,7 @@ class CriticalRe:
         self.FileList=['geom.xml','bd.xml','geomHplusD.fld'];
         self.BetaPath=os.getcwd();
         self.ReList=[];
-        self.exe='/home/nyadav/bin/IncNavierStokesSolver';
+        self.exe='/home/nyadav/.sg/IncNavierStokesSolver';
         self.FilePath=os.getcwd();
         self.BetaPath=os.getcwd();
         self.betaList=aa;
@@ -43,12 +44,15 @@ class CriticalRe:
             self.RePath=os.getcwd();
             self.beta=i;
             funcs.CopyFile(self.BetaPath,os.getcwd(),self.FileList);
-            #self.ReExt([20,40],50);
-            self.Re1000(9,200);
-            self.Re100(8,200);
+            reList=[60,80,100,200,350,400,600,800];
+            for re in reList:
+                ReHisFile=str(self.alpha)+'-'+str(self.S)+'-'+str(i)+'-'+str(i)+'-'+'.his';
+            self.ReFre([60,80,100,200,350,400,600,800],400);
+            #self.Re1000(9,200);
+            #self.Re100(8,200);
             #self.ReExt([50],40);
-            self.Re10(5,200);
-            self.ReFinal2(200);
+            #self.Re10(5,200);
+            #self.ReFinal2(200);
             #self.ReExt([110,120],200);
             os.chdir(self.BetaPath);
 
@@ -141,6 +145,11 @@ class CriticalRe:
         self.CritRe2(para);
         
     
+    def ReFre(self,rlist,time):
+        self.ReList=rlist;
+        para=[0.005,time,'2*FinalTime/TimeStep','','',self.beta,'','0.2/TimeStep',str(np.pi/self.alpha)+' 0 0 ','0.5'];
+        self.IncModFreFile(para);
+
     def CritRe2(self,para):
         for i in self.ReList:
             para[6]=str(self.alpha)+'-'+str(self.Sval)+'-'+str(self.beta)+'-'+str(int(i))+'-.mdl';
@@ -148,9 +157,22 @@ class CriticalRe:
             para[5]=self.beta;
             funcs.simPara(os.getcwd(),self.FileList[1],para);
             funcs.incSolver(self.exe,self.FileList[:-1]);
+        
             
+    def IncModFreFile(self,para):
+        for i in self.ReList:
+            para[6]=str(self.alpha)+'-'+str(self.Sval)+'-'+str(self.beta)+'-'+str(int(i))+'-.mdl';
+            para[3]=i;
+            para[5]=self.beta;
+            funcs.simPara(os.getcwd(),self.FileList[1],para);
+            funcs.incSolver(self.exe,self.FileList[:-1]);
+            fileName=str(self.alpha)+'-'+str(self.beta)+'-'+str(self.Sval)+'-'+str(i)+'-'+'.his';
+            arg='mv TimeValues.his '+fileName;
+            subprocess.call(arg,shell=True);
             #ipVar.incSolverP(self.exe,self.FileList[:-1]);
-
+    def IncSolver(self.FileList[:-1]):
+        args='mpirun -np 1 ~/.sg/IncNavierStokesSolver --npz 4 '+FileList[0]+' '+FileList[1];
+        subprocess.call(args,shell=True);
 
 
 
