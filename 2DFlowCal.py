@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+G -*- coding: utf-8 -*-
 """
 Created on Mon Jun 20 12:07:36 2016
 
@@ -134,17 +134,30 @@ for i in path:
     os.chdir(aPath);
 f.close();
 
+planeFr=2/3.0;
 
-Nobj=188;
-a=np.zeros((Nobj,3),dtype=np.float);
+
+i=1;
+f=open('obejNew.p','rb');
+for i in range(0,1000):
+    out=pickle.load(f);
+    i=i+1;
+    print(i)
+f.close()
+
+
+Nobj=i;
+a=np.zeros((Nobj,5),dtype=np.float);
 f=open('obejNew.p','rb');
 for i in range(0,Nobj):
     out=pickle.load(f);
     a[i,0]=out.alpha[0];
     a[i,1]=out.S[0];
-    a[i,2]=out.qz[0]/out.area[0];
+    a[i,2]=out.qz[0]/(out.area[0]*planeFr);
+    a[i,3]=out.area[0];
+    a[i,4]=out.qz[0];
 f.close();
-
+              
 out.alpha=a[:,0];
 out.S=a[:,1];
 out.qz=a[:,2]

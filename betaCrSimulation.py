@@ -2,79 +2,64 @@ import os;
 from MonkeyPatch import *;
 import xml.etree.ElementTree as ET;
 import sys;
-import subprocess;
 sys.path.append('/home/nyadav/pyscr');
 import ipVar, funcs;
 import numpy as np;
 from scipy.interpolate import InterpolatedUnivariateSpline;
+import subprocess;
+import sigmaMax;
 class CriticalRe:
-    def __init__(self,aa,alpha,Sval):
+    def __init__(self,alpha,Sval):
         self.bdFname='bd.xml';
         cwd=os.getcwd();
         self.alpha=alpha;
         self.Sval=Sval
-        if(alpha=='n'):
-            self.Sval=cwd.split('/')[-1]
-            self.aval=cwd.split('/')[-2];
-        #self.bdFPath=cc;
-        #if(self.bdFPath==' '):
-        #    if(float(aval)==1):
-        #        self.bdFPath='/home/nyadav/symm/'+sval+'/bd';
-        #    self.bdFPath='/home/nyadav/symm/'+aval+'/'+sval+'/bd';
-        #if not (self.bdFPath==' '):
-        #    self.bdFPath=self.bdFPath+'/'+aval+'/'+sval+'/bd';
         self.geomFname='geom.xml';
         self.FileList=['geom.xml','bd.xml','geomHplusD.fld'];
         self.BetaPath=os.getcwd();
         self.ReList=[];
-        self.exe='/home/nyadav/.sg/IncNavierStokesSolver';
+        self.exe='/home/nyadav/.bin/IncNavierStokesSolver';
         self.FilePath=os.getcwd();
         self.BetaPath=os.getcwd();
-        self.betaList=aa;
+        self.betaList=[];
         self.Re=0;
         self.beta=0;
         self.temp=0;
 #        self.CreForBeta(); 
     def CreForBeta3(self):
         os.chdir(self.BetaPath);
+        [rmax,rmin,be,betaBound]=sigmaMax.betaCr(os.getcwd());
+        self.betaList=[be+0.01,be-0.01];
         for i in self.betaList:
             if not os.path.exists(str(i)):
                 os.makedirs(str(i));
             os.chdir(str(i));
-            self.RePath=os.getcwd();
-            self.beta=i;
-            simRe=[];
             funcs.CopyFile(self.BetaPath,os.getcwd(),self.FileList);
-            #reList=[60,80,100,200,350,400,600,800];
-            #for re in reList:
-            #    ReHisFile=str(self.alpha)+'-'+str(i)+'-'+str(self.Sval)+'-'+str(re)+'-'+'.his';
-            #    print(ReHisFile);   
-            #    if os.path.exists(os.getcwd()+'/'+ReHisFile):
-            #        print('yes');
-             #       totalHisPt=np.loadtxt(ReHisFile);
-             #       print(totalHisPt[-1,0]-totalHisPt[1,0]);
-              #      if(totalHisPt[-1,0]-totalHisPt[1,0]<400):
-               #         print('less');
-                #        simRe.append(re);
-                        
-                #else:    
-                 #   print('no');
-                  #  simRe.append(re);
-            #print(simRe);
-            #self.ReFre(simRe,400);
-            
-            self.Re1000(9,50);
-            self.Re100(8,100);
-            self.Re10(5,150);
-            #self.ReFinal2(200);
-            #self.ReExt([110,120],200);
+            self.beta=i;
+            self.RePath=os.getcwd();
+            self.ReExt([rmax,rmin],80);
+            self.ReSmooth(100,2);
+            self.ReSmooth(100,0.3);
             os.chdir(self.BetaPath);
-
-
+        self.betaList=betaBound;
+        for i in self.betaList:
+            if not os.path.exists(str(i)):
+                os.makedirs(str(i));
+            os.chdir(str(i));
+            funcs.CopyFile(self.BetaPath,os.getcwd(),self.FileList);
+            self.beta=i;
+            self.RePath=os.getcwd();
+            self.ReSmooth(100,2);
+            self.ReSmooth(100,0.3);
+            os.chdir(self.BetaPath);
+    def calReCForS(self):
+        [a,b]=ipVar.nsFile(os.getcwd());
+        return a,b;
 
     def Re1000(self,N,time):
         self.ReList=[];
         self.ReList.append(50);
+        selg.ReList.append(900);
         for i in range(0,N):
             self.ReList.append(int(300+i*1000));
         para=[0.005,time,'2*FinalTime/TimeStep','','',self.beta,'','2*FinalTime/TimeStep',str(np.pi/self.alpha)+' 0 0 ','0.5'];
@@ -128,7 +113,7 @@ class CriticalRe:
 
 
 
-    def ReFinal(self):
+    def ReFinal(self,time):
         [a,b]=ipVar.poptFile(os.getcwd());
         re=funcs.calcReC(a,b);
         re=int(re);
@@ -138,18 +123,26 @@ class CriticalRe:
         if not os.path.exists(str(re)):
             os.makedirs(str(re));
         os.chdir(str(re));
-        para=[0.005,400,'0.1*FinalTime/TimeStep','','',self.beta,'','0.2/TimeStep',str(np.pi/self.alpha)+' 0 0 ','1'];
+        para=[0.005,time,'2*FinalTime/TimeStep','','',self.beta,'','2*FinalTime/TimeStep',str(np.pi/self.alpha)+' 0 0 ','1'];
         funcs.CopyFile(path,os.getcwd(),self.FileList);
         self.CritRe2(para);
         
+    def ReSmooth(self,time,incre):
+        [a,b]=ipVar.poptFile(os.getcwd());
+        re=funcs.calcReC(a,b);
+        self.ReList=[];
+        self.ReList.append(re);
+        self.ReList.append(re+incre);
+        self.ReList.append(re-incre);
+        para=[0.005,time,'2*FinalTime/TimeStep','','',self.beta,'','2*FinalTime/TimeStep',str(np.pi/self.alpha)+' 0 0 ','1'];
+        self.CritRe2(para);
 
     def ReFinal2(self,time):
         [a,b]=ipVar.poptFile(os.getcwd());
         re=funcs.calcReC(a,b);
-        re=int(re);
         self.ReList=[];
         self.ReList.append(re);
-        para=[0.005,time,'0.1*FinalTime/TimeStep','','',self.beta,'','0.2/TimeStep',str(np.pi/self.alpha)+' 0 0 ','1'];
+        para=[0.005,time,'0.1*FinalTime/TimeStep','','',self.beta,'','2*FinalTime/TimeStep',str(np.pi/self.alpha)+' 0 0 ','1'];
         self.CritRe2(para);
 
 
@@ -159,42 +152,20 @@ class CriticalRe:
         self.CritRe2(para);
         
     
-    def ReFre(self,rlist,time):
-        self.ReList=rlist;
-        para=[0.005,time,'2*FinalTime/TimeStep','','',self.beta,'','0.2/TimeStep',str(np.pi/self.alpha)+' 0 0 ','0.5'];
-        self.IncModFreFile(para);
-
     def CritRe2(self,para):
         for i in self.ReList:
-            para[6]=str(self.alpha)+'-'+str(self.Sval)+'-'+str(self.beta)+'-'+str(int(i))+'-.mdl';
+            para[6]=str(self.alpha)+'-'+str(self.Sval)+'-'+str(self.beta)+'-'+str(i)+'-.mdl';
             para[3]=i;
             para[5]=self.beta;
             funcs.simPara(os.getcwd(),self.FileList[1],para);
             funcs.incSolver(self.exe,self.FileList[:-1]);
-        
-            
-    def IncModFreFile(self,para):
-        for i in self.ReList:
-            para[6]=str(self.alpha)+'-'+str(self.Sval)+'-'+str(self.beta)+'-'+str(int(i))+'-.mdl';
-            para[3]=i;
-            para[5]=self.beta;
-            funcs.simPara(os.getcwd(),self.FileList[1],para);
-            funcs.incSolver(self.exe,self.FileList[:-1]);
-            fileName=str(self.alpha)+'-'+str(self.Sval)+'-'+str(self.beta)+'-'+str(int(i))+'-'+'.his';
+            fileName=str(self.alpha)+'-'+str(self.Sval)+'-'+str(self.beta)+'-'+str(i)+'-'+'.his';
             arg='mv TimeValues.his '+fileName;
-            subprocess.call(arg,shell=True);
-        
-            filelist=['geom.xml','bd.xml','geomHplusD.fld'];
-            #ipVar.incSolverHypS(filelist);
-            #ipVar.incSolverHyp(1,4,filelist);
-            ipVar.incSolver('~/.sg',filelist);
-            #self.IncSolver();
-
-
-    def IncSolver(self):
-        FileList=['geom.xml','bd.xml','geomHplusD.fl'];
-        args='mpirun -np 1 ~/.sg/IncNavierStokesSolver --npz 4 '+FileList[0]+' '+FileList[1];
-        subprocess.call(args,shell=True);
+###################################################################
+####uncomment this line for History point production##############
+            #subprocess.call(arg,shell=True);
+            
+            #ipVar.incSolverP(self.exe,self.FileList[:-1]);
 
 
 

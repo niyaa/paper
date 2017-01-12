@@ -9,23 +9,6 @@ import extractdata;
 
 out=Output();
 cwd=os.getcwd();
-for root, dir, files in os.walk("./"):
-    for file in files:
-        if(file.endswith(".his")):
-            print(root)
-            if not (file=='TimeValues.his'):
-                os.chdir(root);
-                path=os.getcwd();
-                inE=os.path.join(os.getcwd(),file);
-                out.Re.append(Decimal(file.split('-')[-2]));
-                out.S.append(Decimal(path.split('/')[-1]));
-                out.beta.append(Decimal(path.split('/')[-2]));
-                out.alpha.append(Decimal(path.split('/')[-3]));
-                [a, b, c]=ipVar.nekFre3(inE,1,0,-1,1);
-                out.sigmaR.append(c);  
-                out.sigma.append(0);
-                os.chdir(cwd);
-            #out.alpha.append(Decimal(1));
 
 for root, dir, files in os.walk("./"):
     for file in files:
@@ -43,7 +26,20 @@ for root, dir, files in os.walk("./"):
                 out.sigma.append(popt[1]/2.0);
             else:
                 out.sigma.append(0);
-            out.sigmaR.append(0);
+            his=file.split('-')[:-1];
+            his="-".join(his);
+            his=his+'-.his';
+            if(os.path.exists(os.path.join(os.getcwd(),his))):
+                inE=os.path.join(os.getcwd(),his);
+                [a,b,c]=ipVar.nekFre3(inE,1,0,-1,1);
+                out.sigmaR.append(c);
+                print(inE);
+            
+            else:
+                out.sigmaR.append(0);
+                print("this file not produce Frequecny \n");
+                print(his);
+
             os.chdir(cwd);
             
 n=len(out.Re);

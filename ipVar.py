@@ -36,10 +36,32 @@ def CheckEnergySat(filename):
         en=case.energy[case.mod==i];
         print(en[-1]);
         if(en[-1]>0):j=j+1;
-    if(j>10):return 1;
+    if(j>20):return 1;
     return 0;
 
                    
+def CheckEnergySat4Mode(filename):
+    case=Case();
+    case.time, case.mod, case.energy = np.loadtxt(filename,  comments="\x00", skiprows=1, usecols=(0,1,2), unpack=True);
+    mm=set(case.mod);
+    j=1;
+    time=case.time[case.mod==j];
+    en=case.energy[case.mod==j];
+    del case;
+    if(np.abs(np.log10(en[-1]/en[0]))>=1.0):return 1;
+    return 0;
+
+def CheckSaturation(mod):
+    case=Case();
+    case.time,case.mod,case.energy = np.loadtxt('EnergyFile.mdl', comments="\x00", skiprows=1, usecols=(0,1,2), unpack=True)
+    t0=case.time[(case.mod==mod)];
+    e0=case.energy[(case.mod==mod)];
+    y1=np.gradient(e0,2);
+    y2=np.where(y1<=0);
+    if(len(y2[0])>1):return 0;
+    return 1;
+
+
     os.chdir('/home/nyadav/pbs');
     f1=open('/home/nyadav/pbs/jobBezmpi.sh','r');
     d=f1.readlines();
@@ -115,6 +137,16 @@ def incSolverP(exe,filelist):
     print('Working in this directory \n');
     print(os.getcwd());
     subprocess.call(args,shell=True); 
+
+def incSolverHyp(np,npz,filelist):
+    args='mpirun -np '+str(np)+' ~/.sg/IncNavierStokesSolver --npz '+str(npz)+' '+filelist[0]+' '+filelist[1];
+    subprocess.call(args,shell=True);
+
+
+def incSolverHypS(filelist):
+    args='~/.sg/IncNavierStokesSolver'+' '+filelist[0]+' '+filelist[1];
+    subprocess.call(args,shell=True);
+
 
 import numpy as np;
 from case import *;
@@ -227,7 +259,7 @@ def nsplot(Re ,beta):
 
 
 
-def nekFre(inE,obsPointNos,velDiri):
+def nekFre(inE,obsPointNos,velDir):
     #skipRows number of points obspoints Number =+1 
     time=[]; fre=[];
     a=np.loadtxt(inE,skiprows=obsPointNos+1);
@@ -251,9 +283,12 @@ def nekFre3(inE,obsP,stp=0,points=-1,vel=3):
     time=[]; fre=[];
     a=np.loadtxt(inE,skiprows=obsP+1);
     #[ts,ft,a,d,e]=funcs.paramVal('bd.xml');
-        
-    x=a[stp:points,0];
-    y=a[stp:points,vel];
+    if(len(a)>10):
+        x=a[stp:points,0];
+        y=a[stp:points,vel];
+    else:
+        return 0,[0],0;
+
     del a;
     if(len(x) <2000):
         f=interp1d(x,y,kind='cubic');
@@ -274,12 +309,12 @@ def nekFre3(inE,obsP,stp=0,points=-1,vel=3):
         return ans, time, 2*np.pi/ans;
     if(len(time)==3):
         ans=time[2]-time[0];
-        return ans, time;
+        return ans, time, 2*np.pi/ans;
     if(len(time)<3 and len(time)>1):
         ans=(time[1]-time[0])*2;
-        return ans,time;
+        return ans,time, 2*np.pi/ans;
     if(len(time)<=1):
-        return 0,0;
+        return 0,[0],0;
 
 def nekFre2(inE,obsPointNos,velDir,enFilePath):
     #skipRows number of points obspoints Number =+1
@@ -384,8 +419,11 @@ def nsFile(path):
     p1=glob("*/");
     aa=[];bb=[];cc=[];dd=[];ee=[];
     for i in p1:
-        os.chdir(i);
-        [a,b]=poptFile(os.getcwd());
+        try:
+            [a,b]=poptFile(cwd+'/'+i);
+        except:
+            os.chdir(cwd);
+            continue;
         try:
             c=funcs.calcReC(a,b);
             if(c>0):
@@ -397,6 +435,7 @@ def nsFile(path):
             cc.append(float(i.split('/')[0]));
             dd.append(a);
             ee.append(b);
+            continue;
         os.chdir(cwd);
 
     l2, l1 = zip(*sorted(zip(aa, bb)));
@@ -405,7 +444,7 @@ def nsFile(path):
     c=np.asarray(c);
     sVal=cwd.split('/')[-1];
     alpha=cwd.split('/')[-2];
-    np.savetxt('ns.'+sVal+'.'+alpha+'.txt',c.T);
+    np.savetxt('ns-'+sVal+'-'+alpha+'-.txt',c.T);
     print(col.DARKCYAN+'The Critical Reynolds can not be found for '+str(cc)+col.END);
 
     print(col.CYAN+'The corresponding growth rates \t'+col.END);
@@ -419,13 +458,17 @@ def nsFile(path):
 
 
 
-def poptFile(path=os.getcwd()):
+def poptFile(path):
     cwd=os.getcwd();
+    os.chdir(path);
     path1=glob('*.mdl');
     x=[];y=[];
     for i in path1:
         f=i.split('-')[-2];
-        [a,b]=poptEnRa(i);
+        try:
+            [a,b]=poptEnRa(i);
+        except:
+            continue;
         if not (len(a) ==0 and b ==0):
             x.append(a[1]/2);
             y.append(float(f));

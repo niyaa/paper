@@ -1,6 +1,6 @@
 import sys, os, subprocess;
 
-sys.path.append("~/Dropbox/script")
+sys.path.append("/home/nyadav/pyscr")
 import funcs;
 
 def dist():
@@ -19,5 +19,15 @@ def vtu():
     path=os.getcwd();
     N=funcs.MaxChk(path);
     for i in range(0,N+1):
-        args='FieldConvert geom.xml '+'geom_'+str(i)+'.chk '+'geom_'+str(i)+'.vtu';
-        subprocess.call(args,shell=True);
+        if not (os.path.exists(os.getcwd()+'/geom_'+str(i)+'.vtu')):
+            args='FieldConvert geom.xml '+'geom_'+str(i)+'.chk '+'geom_'+str(i)+'.vtu';
+            subprocess.call(args,shell=True);
+
+        
+def vtuHyp():
+    path=os.getcwd();
+    N=funcs.MaxChk(path);
+    for i in range(0,N+1):
+        if not (os.path.exists(os.getcwd()+'/geom_'+str(i)+'.vtu')):
+            args='~/.sg/FieldConvert geom.xml '+'geom_'+str(i)+'.chk '+'geom_'+str(i)+'.vtu';
+            subprocess.call(args,shell=True);

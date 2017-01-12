@@ -10,6 +10,7 @@ class Output(object):
         self.Wmin=[];
         self.Wdif=[];
         self.qz=[];
+        self.ReC=[];
         self.area=[];
         self.W=[];
         self.X=[];
@@ -17,3 +18,4 @@ class Output(object):
         self.Wroot=[];
         self.shIn=[];
         self.spoint=[];
+        self.betaCr=[];

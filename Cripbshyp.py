@@ -9,7 +9,7 @@ sys.path.append('/home/nyadav/pyscr');
 import ipVar;
 rse='nodes=1:ppn=1';
 #rse='nodes=newton-02:ppn=1';
-module='module load gmsh/2.9.2';
+module='module load openmpi/1.X.X-debian';
 path=os.getcwd();
 os.chdir(path);
 betaList=[]
@@ -17,9 +17,11 @@ betaList=[]
 #betaList=[0.85,0.9,1,1.1,1.2,1.3,1.4,1.5,1.6];
 #betaList=[0.05,0.25 ,0.35,0.6,0.8,0.15 ,0.3,0.4,0.5,0.7,0.1, 0.8, 0.9,1,1.1,1.2,1.3,1.4,1.5,1.6]
 #betaList=[0.7,0.75,0.05]
-Betas=glob("*/");
-for ii in Betas:
-    betaList.append(float(ii.split('/')[0]));
+for i in range(0,18):
+    betaList.append(0.5+i*0.1);
+#Betas=glob("*/");
+#for ii in Betas:
+#    betaList.append(float(ii.split('/')[0]));
 
 path=os.getcwd();
 print(betaList);
