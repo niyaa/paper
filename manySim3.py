@@ -14,21 +14,10 @@ class CriticalRe:
         cwd=os.getcwd();
         self.alpha=alpha;
         self.Sval=Sval
-        if(alpha=='n'):
-            self.Sval=cwd.split('/')[-1]
-            self.aval=cwd.split('/')[-2];
-        #self.bdFPath=cc;
-        #if(self.bdFPath==' '):
-        #    if(float(aval)==1):
-        #        self.bdFPath='/home/nyadav/symm/'+sval+'/bd';
-        #    self.bdFPath='/home/nyadav/symm/'+aval+'/'+sval+'/bd';
-        #if not (self.bdFPath==' '):
-        #    self.bdFPath=self.bdFPath+'/'+aval+'/'+sval+'/bd';
         self.geomFname='geom.xml';
         self.FileList=['geom.xml','bd.xml','geomHplusD.fld'];
         self.BetaPath=os.getcwd();
         self.ReList=[];
-        #self.exe='/home/nyadav/bin/IncNavierStokesSolver';
         self.exe='/home/nyadav/.bin/IncNavierStokesSolver';
         self.FilePath=os.getcwd();
         self.BetaPath=os.getcwd();
@@ -47,12 +36,13 @@ class CriticalRe:
             self.beta=i;
             funcs.CopyFile(self.BetaPath,os.getcwd(),self.FileList);
             #self.ReExt([bb+20,bb+bb*0.05 ],50)
-            self.ReExt([40,100,200,300,400,500,600],50);
-            #self.Re1000(1,50);
-            #self.Re100(8,50);
-            #self.ReExt([40,200],50);
-            self.Re10(8,100);
-            #self.ReSmooth(100,2);
+            #self.ReExt([400,500,600,700,800,900],100);
+            self.ReExt([400,500,600,700,800,900,1000],50);
+            #self.Re100(9,500);
+            #self.ReExt([600,700,900],80);
+            self.Re10(5,100);
+            #self.ReSmooth(100,10);
+            self.ReSmooth(100,2);
             #self.ReSmooth(100,0.1);
             #self.ReExt([60,80,100,200,350,400,600,800],200);
             #self.ReExt([500,700,900],50);
@@ -69,7 +59,7 @@ class CriticalRe:
         selg.ReList.append(900);
         for i in range(0,N):
             self.ReList.append(int(300+i*1000));
-        para=[0.005,time,'2*FinalTime/TimeStep','','',self.beta,'','2*FinalTime/TimeStep',str(np.pi/self.alpha)+' 0 0 ','0.5'];
+        para=[0.005,time,'2*FinalTime/TimeStep','','',self.beta,'','2*FinalTime/TimeStep',str(np.pi/self.alpha)+' 0 0 ','1'];
         self.CritRe2(para);
     
     def Re100(self,N,time):
@@ -77,7 +67,7 @@ class CriticalRe:
         [a,b]=ipVar.poptFile(os.getcwd());
         xx=(i for i in range(0,len(a)) if a[i] > 0 ).next();
         self.ReList.append(abs(b[xx]-100));
-        para=[0.005,150,'2*FinalTime/TimeStep','','',self.beta,'','2*FinalTime/TimeStep',str(np.pi/self.alpha)+' 0 0 ','0.5'];
+        para=[0.02,time,'2*FinalTime/TimeStep','','',self.beta,'','1/TimeStep',str(np.pi/self.alpha)+' 0 0 ','1'];
         self.CritRe2(para);
         self.ReList=[];
 
@@ -88,7 +78,7 @@ class CriticalRe:
         c=int(c);
         for i in range(1,N):
             self.ReList.append(int(a+i*c));
-        para=[0.005,time,'2*FinalTime/TimeStep','','',self.beta,'','2*FinalTime/TimeStep',str(np.pi/self.alpha)+' 0 0 ','0.5'];
+        para=[0.02,time,'2*FinalTime/TimeStep','','',self.beta,'','1/TimeStep',str(np.pi/self.alpha)+' 0 0 ','1'];
         self.CritRe2(para);
 
     def Re10(self,N,time):
@@ -102,7 +92,7 @@ class CriticalRe:
             self.ReList.append(abs(b[xx[1]]-10));
             self.ReList.append(b[xx[2]]+10);
             self.ReList.append(abs(b[xx[2]]-10));
-        para=[0.005,150,'2*FinalTime/TimeStep','','',self.beta,'','2*FinalTime/TimeStep',str(np.pi/self.alpha)+' 0 0 ','0.5'];
+        para=[0.005,time,'2*FinalTime/TimeStep','','',self.beta,'','1/TimeStep',str(np.pi/self.alpha)+' 0 0 ','1'];
         self.CritRe2(para);
         self.ReList=[];
 
@@ -115,24 +105,10 @@ class CriticalRe:
         c=int(c);
         for i in range(1,N):
             self.ReList.append(int(a+i*c));
-        para=[0.005,time,'2*FinalTime/TimeStep','','',self.beta,'','2*FinalTime/TimeStep',str(np.pi/self.alpha)+' 0 0 ','1'];
+        para=[0.005,time,'2*FinalTime/TimeStep','','',self.beta,'','1/TimeStep',str(np.pi/self.alpha)+' 0 0 ','1'];
         self.CritRe2(para);
 
 
-
-    def ReFinal(self,time):
-        [a,b]=ipVar.poptFile(os.getcwd());
-        re=funcs.calcReC(a,b);
-        re=int(re);
-        self.ReList=[];
-        self.ReList.append(re);
-        path=os.getcwd();
-        if not os.path.exists(str(re)):
-            os.makedirs(str(re));
-        os.chdir(str(re));
-        para=[0.005,time,'2*FinalTime/TimeStep','','',self.beta,'','2*FinalTime/TimeStep',str(np.pi/self.alpha)+' 0 0 ','1'];
-        funcs.CopyFile(path,os.getcwd(),self.FileList);
-        self.CritRe2(para);
         
     def ReSmooth(self,time,incre):
         [a,b]=ipVar.poptFile(os.getcwd());
@@ -144,18 +120,11 @@ class CriticalRe:
         para=[0.005,time,'2*FinalTime/TimeStep','','',self.beta,'','2*FinalTime/TimeStep',str(np.pi/self.alpha)+' 0 0 ','1'];
         self.CritRe2(para);
 
-    def ReFinal2(self,time):
-        [a,b]=ipVar.poptFile(os.getcwd());
-        re=funcs.calcReC(a,b);
-        self.ReList=[];
-        self.ReList.append(re);
-        para=[0.005,time,'0.1*FinalTime/TimeStep','','',self.beta,'','2*FinalTime/TimeStep',str(np.pi/self.alpha)+' 0 0 ','1'];
-        self.CritRe2(para);
 
 
     def ReExt(self,rlist,time):
         self.ReList=rlist;
-        para=[0.005,time,'2*FinalTime/TimeStep','','',self.beta,'','2*FinalTime/TimeStep',str(np.pi/self.alpha)+' 0 0 ','0.5'];
+        para=[0.005,time,'2*FinalTime/TimeStep','','',self.beta,'','1/TimeStep',str(np.pi/self.alpha)+' 0 0 ','1'];
         self.CritRe2(para);
         
     
@@ -168,6 +137,7 @@ class CriticalRe:
             funcs.incSolver(self.exe,self.FileList[:-1]);
             fileName=str(self.alpha)+'-'+str(self.Sval)+'-'+str(self.beta)+'-'+str(i)+'-'+'.his';
             arg='mv TimeValues.his '+fileName;
+            subprocess.call(arg,shell=True);
 ###################################################################
 ####uncomment this line for History point production##############
             #subprocess.call(arg,shell=True);

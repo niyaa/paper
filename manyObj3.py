@@ -36,6 +36,7 @@ rlist.append(float(second_arg));
 #        rlist.append(ReMin+ReMin*j); 
 
 
+print(a);print(rlist);
 #[a,b]=ipVar.nsFile(os.getcwd());
 b=manySim4.CriticalRe(a,alpha,sval,rlist);
 b.CreForBeta3();

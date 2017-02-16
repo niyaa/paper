@@ -13,15 +13,21 @@ module='module load gmsh/2.9.2';
 path=os.getcwd();
 os.chdir(path);
 betaList=[]
-#betaList=[0.1,0.3,0.2,0.25 ,0.35,0.4,0.45,0.5,0.6]
-#betaList=[0.85,0.9,1,1.1,1.2,1.3,1.4,1.5,1.6];
-#betaList=[0.05,0.25 ,0.35,0.6,0.8,0.15 ,0.3,0.4,0.5,0.7,0.1, 0.8, 0.9,1,1.1,1.2,1.3,1.4,1.5,1.6]
-for i in range(0,5):
-    betaList.append(0.75+0.05*i)
-#Betas=glob("*/");
+
+
+#N=int(raw_input('Enter N \n'));
+#st=str(raw_input('Enter the starting point \n'));
+#st=float(st);
+#dbeta=str(raw_input("STEP SIZE \n",));
+#dbeta=float(dbeta);
+N=13; st=0.6; dbeta=0.05;mod=0;
+for i in range(0,N):
+    betaList.append(st+dbeta*i)
+Betas=glob("*/");
 #for ii in Betas:
 #    betaList.append(float(ii.split('/')[0]));
-
+#print('For interactive Enter 1 and for qsub enter 0 \n');
+#mod=int(raw_input());
 
 path=os.getcwd();
 print(betaList);
@@ -32,6 +38,10 @@ for i in betaList:
     cmd.append('/home/nyadav/anaconda2/bin/ipython2 /home/nyadav/pyscr/manyObj2.py '+str(i));
     crdir=os.getcwd();
     ipVar.pbs(rse,"-".join(crdir.split('/')[-2:])+"-"+str(i),module,os.getcwd(),cmd);
-    subprocess.call("qsub pbs.sh",shell=True);
+    if(mod==1):
+        cmd[0]=cmd[0]+' &';
+        subprocess.call(cmd[0],shell=True);
+    if(mod==0):
+        subprocess.call("qsub pbs.sh",shell=True);
     os.chdir(path);
     

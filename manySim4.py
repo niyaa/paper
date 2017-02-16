@@ -27,7 +27,7 @@ class CriticalRe:
         self.FileList=['geom.xml','bd.xml','geomHplusD.fld'];
         self.BetaPath=os.getcwd();
         self.ReList=rlist;
-        self.exe='/home/nyadav/bin/IncNavierStokesSolver';
+        self.exe='/home/nyadav/.bin/IncNavierStokesSolver';
         self.FilePath=os.getcwd();
         self.BetaPath=os.getcwd();
         self.betaList=aa;
@@ -44,7 +44,7 @@ class CriticalRe:
             self.RePath=os.getcwd();
             self.beta=i;
             funcs.CopyFile(self.BetaPath,os.getcwd(),self.FileList);
-            self.ReExt(self.ReList,100);
+            self.ReExt(self.ReList,200);
             #self.ReExt([bb+20,bb+bb*0.05 ],50)
             #self.ReExt([20,40],50);
             #self.Re1000(9,50);
@@ -153,10 +153,9 @@ class CriticalRe:
             para[3]=i;
             para[5]=self.beta;
             funcs.simPara(os.getcwd(),self.FileList[1],para);
-            funcs.incSolver(self.exe,self.FileList[:-1]);
             fileName=str(self.alpha)+'-'+str(self.Sval)+'-'+str(self.beta)+'-'+str(i)+'-'+'.his';
-            arg='mv TimeValues.his '+fileName;
-            subprocess.call(arg,shell=True);
+            funcs.HiFileCh(os.getcwd(),self.FileList[1],fileName)
+            funcs.incSolver(self.exe,self.FileList[:-1]);
             
             #ipVar.incSolverP(self.exe,self.FileList[:-1]);
 

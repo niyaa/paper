@@ -19,3 +19,4 @@ class Output(object):
         self.shIn=[];
         self.spoint=[];
         self.betaCr=[];
+        

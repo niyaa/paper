@@ -180,274 +180,287 @@ def pbs(rse,name,module,wd,exe):
     f.close();
 
 
-    def editGeo(pathS,pathD,a,S,nx,ny):
-        path=pathS+'/'+'divConv2D.scr';      
-        f=open(path,'r');
-        d=f.readlines();
-        d[1]='nx='+str(nx)+';\n';
-        d[2]='ny='+str(ny)+';\n';
-        d[3]='S='+str(S)+';\n';
-        d[4]='a='+str(a)+';\n';
-        f.close();
-        path=pathD+'/'+'divConv2D.scr';
-        f=open(path,'w');
-        f.writelines(d);
-        f.close();
+def editGeo(pathS,pathD,a,S,nx,ny):
+    path=pathS+'/'+'divConv2D.scr';      
+    f=open(path,'r');
+    d=f.readlines();
+    d[1]='nx='+str(nx)+';\n';
+    d[2]='ny='+str(ny)+';\n';
+    d[3]='S='+str(S)+';\n';
+    d[4]='a='+str(a)+';\n';
+    f.close();
+    path=pathD+'/'+'divConv2D.scr';
+    f=open(path,'w');
+    f.writelines(d);
+    f.close();
 
-    def ReCh(path,fileName,R):
-        FilePath=path+'/'+fileName
-        tree=ET.parse(FilePath,OrderedXMLTreeBuilder());
-        root=tree.getroot();
-        Re='Re='+str(R);
-        root[1][1][5].text=Re;
-        tree.write(FilePath);
+def ReCh(path,fileName,R):
+    FilePath=path+'/'+fileName
+    tree=ET.parse(FilePath,OrderedXMLTreeBuilder());
+    root=tree.getroot();
+    Re='Re='+str(R);
+    root[1][1][5].text=Re;
+    tree.write(FilePath);
 
-    def EnCh(path,fileName,name):
-        FilePath=path+'/'+fileName;
-        tree=ET.parse(FilePath,OrderedXMLTreeBuilder());
-        root=tree.getroot();
-        root[3][0][0].text=name;
-        tree.write(FilePath);
+def EnCh(path,fileName,name):
+    FilePath=path+'/'+fileName;
+    tree=ET.parse(FilePath,OrderedXMLTreeBuilder());
+    root=tree.getroot();
+    root[3][0][0].text=name;
+    tree.write(FilePath);
 
-    def EnFCh(path,fileName,name):
-        FilePath=path+'/'+fileName;
-        tree=ET.parse(FilePath,OrderedXMLTreeBuilder());
-        root=tree.getroot();
-        root[3][0][1].text=name+'/TimeStep';
-        tree.write(FilePath);
+def EnFCh(path,fileName,name):
+    FilePath=path+'/'+fileName;
+    tree=ET.parse(FilePath,OrderedXMLTreeBuilder());
+    root=tree.getroot();
+    root[3][0][1].text=name+'/TimeStep';
+    tree.write(FilePath);
 
-    def HiCh(path,fileName,name):
-        FilePath=path+'/'+fileName;
-        tree=ET.parse(FilePath,OrderedXMLTreeBuilder());
-        root=tree.getroot();
-        root[3][1][3].text='\n'+name+'\n';
-        tree.write(FilePath);
-
-
-    def HiFCh(path,fileName,name):
-        FilePath=path+'/'+fileName;
-        tree=ET.parse(FilePath,OrderedXMLTreeBuilder());
-        root=tree.getroot();
-        root[3][1][1].text=name;
-        tree.write(FilePath);
+def HiCh(path,fileName,name):
+    FilePath=path+'/'+fileName;
+    tree=ET.parse(FilePath,OrderedXMLTreeBuilder());
+    root=tree.getroot();
+    root[3][1][3].text='\n'+name+'\n';
+    tree.write(FilePath);
 
 
-
-    def LzCh(path,fileName,Beta):
-        FilePath=path+'/'+fileName
-        tree=ET.parse(FilePath,OrderedXMLTreeBuilder());
-        root=tree.getroot();
-        lz='LZ='+str((np.pi*2/(Beta)));
-        root[1][1][8].text=lz
-        tree.write(FilePath)
-
-    def FTCh(path,fileName,FT):
-        FilePath=path+'/'+fileName
-        tree=ET.parse(FilePath,OrderedXMLTreeBuilder());
-        root=tree.getroot();
-        FT='FinalTime ='+str(FT);
-        root[1][1][1].text=FT
-        tree.write(FilePath)
-
-    def DtCh(path,fileName,dt):
-        FilePath=path+'/'+fileName;
-        tree=ET.parse(FilePath,OrderedXMLTreeBuilder());
-        root=tree.getroot();
-        Dt='TimeStep ='+str(dt);
-        root[1][1][0].text=Dt
-        tree.write(FilePath)
-
-    def ChkCh(path,fileName,chkN):
-        FilePath=path+'/'+fileName;
-        tree=ET.parse(FilePath,OrderedXMLTreeBuilder());
-        root=tree.getroot();
-        ChkN='IO_CheckSteps ='+str(chkN);
-        root[1][1][3].text=ChkN;
-        tree.write(FilePath);
-
-    def HmCh(path,fileName,hmz):
-        FilePath=path+'/'+fileName;
-        tree=ET.parse(FilePath,OrderedXMLTreeBuilder());
-        root=tree.getroot();
-        Hmz='HomModesZ ='+str(hmz);
-        root[1][1][7].text=Hmz;
-        tree.write(FilePath);
+def HiFCh(path,fileName,name):
+    FilePath=path+'/'+fileName;
+    tree=ET.parse(FilePath,OrderedXMLTreeBuilder());
+    root=tree.getroot();
+    root[3][1][1].text=name;
+    tree.write(FilePath);
 
 
-    def addEnergyFile(pathA,fileName):
-        pwd=os.getcwd();
-        os.chdir(pathA);  
-        subprocess.call(['sed "1,3d" EnergyFile.mdl > abc.txt'],shell=True);
-        subprocess.call('cat ../EnergyFile.mdl abc.txt > ../abc.txt',shell=True);
-        subprocess.call('mv ../abc.txt ../EnergyFile.mdl', shell=True);
-        os.chdir(pwd);
+def HiFileCh(path,fileName,name):
+    FilePath=path+'/'+fileName;
+    tree=ET.parse(FilePath,OrderedXMLTreeBuilder());
+    root=tree.getroot();
+    root[3][1][0].text=name;
+    tree.write(FilePath);
 
-    def nsvalues(path1):
-        cwd=path1;
-        path=glob('*/');
-        x=[];y=[];
-        for x in path:
-            f=i.split('/')[0];
-            newPath=cwd+'/'+f;
-            print('the new path \n \n \n \n \n');
-            print(newPath);
-            print('\n \n \n \n \n \n');
-            [a,b,c]=ipVar.sigma(newPath);
-            x.append(float(f));
-            y.append(c);
-        return x, y;
+def LzCh(path,fileName,Beta):
+    FilePath=path+'/'+fileName
+    tree=ET.parse(FilePath,OrderedXMLTreeBuilder());
+    root=tree.getroot();
+    lz='LZ='+str((np.pi*2/(Beta)));
+    root[1][1][8].text=lz
+    tree.write(FilePath)
 
-    def nsplot(Re,beta):
-        x=Re;y=beta;
-        YX=zip(y,x);
-        YX.sort();
-        
-        xx=[];yy=[];
-        for i in range(0,len(YX)):
-            yy.append(YX[i][0]);
-            xx.append(YX[i][1]);
-        fig, ax=plt.subplots();
-        ax.plot(xx,yy);
-        ax.grid(True);
-        plt.ylabel('Beta');
-        plt.xlabel('Reynolds Number');
-        plt.show()
-         
-        os.chdir(pwd);
-      
-    def popt(file,up=1e-8,down=1e-18):
-        case=Case();
-        case.time,case.mod,case.energy = np.loadtxt(file, comments="\x00", skiprows=1, usecols=(0,1,2), unpack=True)
-        if(case.time[0] > 100):N1=case.time[0]; case.time[0::2]=case.time[0::2]-N1;case.time[1::2]=case.time[1::2]-N1;
-        case.t,case.e=extractdata.extractData(case,case.time[-1],up, down);
-        print(case.t);
-        popt, pcov = curve_fit(func, case.t, case.e, p0=(1e-15, 1e-2))
-        perr = np.sqrt(np.diag(pcov))[0]+np.sqrt(np.diag(pcov))[1] ;
-        return popt, perr;   
+def FTCh(path,fileName,FT):
+    FilePath=path+'/'+fileName
+    tree=ET.parse(FilePath,OrderedXMLTreeBuilder());
+    root=tree.getroot();
+    FT='FinalTime ='+str(FT);
+    root[1][1][1].text=FT
+    tree.write(FilePath)
 
-    def calcReC(x,y):
-        x.sort();y.sort();
-        func=UnivariateSpline(x,y,k=3,s=0);
-        for i in range(0,len(x)-1):
-            temp=y[i+1];
-            if((y[i] > 0 and temp <0) or (y[i]<0 and temp >0)):
-                a=x[i]; b=x[i+1];
-        tol=1e-6;
-        while(abs(a-b)>tol):
-            c=(a+b)/2.0;
-            if(samesign(func,a,c)):b=c;
-            else: a=c
+def DtCh(path,fileName,dt):
+    FilePath=path+'/'+fileName;
+    tree=ET.parse(FilePath,OrderedXMLTreeBuilder());
+    root=tree.getroot();
+    Dt='TimeStep ='+str(dt);
+    root[1][1][0].text=Dt
+    tree.write(FilePath)
+
+def ChkCh(path,fileName,chkN):
+    FilePath=path+'/'+fileName;
+    tree=ET.parse(FilePath,OrderedXMLTreeBuilder());
+    root=tree.getroot();
+    ChkN='IO_CheckSteps ='+str(chkN);
+    root[1][1][3].text=ChkN;
+    tree.write(FilePath);
+
+def HmCh(path,fileName,hmz):
+    FilePath=path+'/'+fileName;
+    tree=ET.parse(FilePath,OrderedXMLTreeBuilder());
+    root=tree.getroot();
+    Hmz='HomModesZ ='+str(hmz);
+    root[1][1][7].text=Hmz;
+    tree.write(FilePath);
+
+def ExCh(path,fileName,ex):
+    FilePath=path+'/'+fileName;
+    tree=ET.parse(FilePath,OrderedXMLTreeBuilder());
+    root=tree.getroot();
+    root[0][0].attrib['NUMMODES']=str(ex);
+    tree.write(FilePath);
+
+
+def addEnergyFile(pathA,fileName):
+    pwd=os.getcwd();
+    os.chdir(pathA);  
+    subprocess.call(['sed "1,3d" EnergyFile.mdl > abc.txt'],shell=True);
+    subprocess.call('cat ../EnergyFile.mdl abc.txt > ../abc.txt',shell=True);
+    subprocess.call('mv ../abc.txt ../EnergyFile.mdl', shell=True);
+    os.chdir(pwd);
+
+def nsvalues(path1):
+    cwd=path1;
+    path=glob('*/');
+    x=[];y=[];
+    for x in path:
+        f=i.split('/')[0];
+        newPath=cwd+'/'+f;
+        print('the new path \n \n \n \n \n');
+        print(newPath);
+        print('\n \n \n \n \n \n');
+        [a,b,c]=ipVar.sigma(newPath);
+        x.append(float(f));
+        y.append(c);
+    return x, y;
+
+def nsplot(Re,beta):
+    x=Re;y=beta;
+    YX=zip(y,x);
+    YX.sort();
+    
+    xx=[];yy=[];
+    for i in range(0,len(YX)):
+        yy.append(YX[i][0]);
+        xx.append(YX[i][1]);
+    fig, ax=plt.subplots();
+    ax.plot(xx,yy);
+    ax.grid(True);
+    plt.ylabel('Beta');
+    plt.xlabel('Reynolds Number');
+    plt.show()
+     
+    os.chdir(pwd);
+  
+def popt(file,up=1e-8,down=1e-18):
+    case=Case();
+    case.time,case.mod,case.energy = np.loadtxt(file, comments="\x00", skiprows=1, usecols=(0,1,2), unpack=True)
+    if(case.time[0] > 100):N1=case.time[0]; case.time[0::2]=case.time[0::2]-N1;case.time[1::2]=case.time[1::2]-N1;
+    case.t,case.e=extractdata.extractData(case,case.time[-1],up, down);
+    print(case.t);
+    popt, pcov = curve_fit(func, case.t, case.e, p0=(1e-15, 1e-2))
+    perr = np.sqrt(np.diag(pcov))[0]+np.sqrt(np.diag(pcov))[1] ;
+    return popt, perr;   
+
+def calcReC(x,y):
+    x.sort();y.sort();
+    func=UnivariateSpline(x,y,k=3,s=0);
+    for i in range(0,len(x)-1):
+        temp=y[i+1];
+        if((y[i] > 0 and temp <0) or (y[i]<0 and temp >0)):
+            a=x[i]; b=x[i+1];
+    tol=1e-6;
+    while(abs(a-b)>tol):
         c=(a+b)/2.0;
-        return c;
+        if(samesign(func,a,c)):b=c;
+        else: a=c
+    c=(a+b)/2.0;
+    return c;
 
-    def samesign(func,a,b):
-        c=func(a)*func(b);
-        if(c<0):return 1;
-        else: return 0;
+def samesign(func,a,b):
+    c=func(a)*func(b);
+    if(c<0):return 1;
+    else: return 0;
 
-    def bdexe(path,exe,fileList,energyVal,itrVal):
+def bdexe(path,exe,fileList,energyVal,itrVal):
+    incSolver(exe,fileList);
+    itr=0;
+    while((CheckEnergyUp(path,'EnergyFile.mdl',energyVal)) and itr < itrVal):
+        path2=path+'/2';
+        f=MaxChk(path);        
+        icFile='geom_'+str(f)+'.chk';
+        print(icFile)
+        if not os.path.exists(path2):
+            os.makedirs(path2);
+        os.chdir(path2);
+        CopyFile(path,path2,fileList);
+        ICFile(path,path2,icFile,'bd.xml');                                            
         incSolver(exe,fileList);
-        itr=0;
-        while((CheckEnergyUp(path,'EnergyFile.mdl',energyVal)) and itr < itrVal):
-            path2=path+'/2';
-            f=MaxChk(path);        
-            icFile='geom_'+str(f)+'.chk';
-            print(icFile)
-            if not os.path.exists(path2):
-                os.makedirs(path2);
-            os.chdir(path2);
-            CopyFile(path,path2,fileList);
-            ICFile(path,path2,icFile,'bd.xml');                                            
-            incSolver(exe,fileList);
-            addEnergyFile(path2,'EnergyFile.mdl');
-            itr=itr+1
-            bc=MaxChk(path2);  
-            ac=MaxChk(path);
-            moveChk(path2,path,ac,bc)
-            itr=itr+1;
-            os.chdir(path);   
-            
+        addEnergyFile(path2,'EnergyFile.mdl');
+        itr=itr+1
+        bc=MaxChk(path2);  
+        ac=MaxChk(path);
+        moveChk(path2,path,ac,bc)
+        itr=itr+1;
+        os.chdir(path);   
+        
 
-    def first(path,exe,fileList,energyVal,FT,Re,FT2,incre):
+def first(path,exe,fileList,energyVal,FT,Re,FT2,incre):
+    ReCh(path,fileList[1],Re);
+    FTCh(path,fileList[1],FT);
+    incSolver(exe,fileList);
+    fileName='EnergyFile.mdl';
+    energy=np.loadtxt(fileName,skiprows=1);
+    a=energy[-1,-1];
+
+    while(a< energyVal):
+        Re=Re+incre;
         ReCh(path,fileList[1],Re);
-        FTCh(path,fileList[1],FT);
         incSolver(exe,fileList);
-        fileName='EnergyFile.mdl';
-        energy=np.loadtxt(fileName,skiprows=1);
+        energy=np.loadtxt('EnergyFile.mdl',skiprows=1);
         a=energy[-1,-1];
+    FTCh(path,fileList[1],FT2);
+        
 
-        while(a< energyVal):
-            Re=Re+incre;
-            ReCh(path,fileList[1],Re);
-            incSolver(exe,fileList);
-            energy=np.loadtxt('EnergyFile.mdl',skiprows=1);
-            a=energy[-1,-1];
+def firstExt(path,exe,fileList,energyVal,FT,Re,FT2,incre,energyVal2):
+    ReCh(path,fileList[1],Re);
+    FTCh(path,fileList[1],FT);
+    incSolver(exe,fileList);
+    fileName='EnergyFile.mdl';
+    energy=np.loadtxt(fileName,skiprows=1);
+    a=energy[-1,-1];
+
+    while(a< energyVal):
+        Re=Re+incre;
+        ReCh(path,fileList[1],Re);
+        incSolver(exe,fileList);
+        energy=np.loadtxt('EnergyFile.mdl',skiprows=1);
+        a=energy[-1,-1];
+    while(a< energyVal2):
         FTCh(path,fileList[1],FT2);
-            
-
-    def firstExt(path,exe,fileList,energyVal,FT,Re,FT2,incre,energyVal2):
-        ReCh(path,fileList[1],Re);
-        FTCh(path,fileList[1],FT);
+        path2=os.getcwd()+'/2';
+        if not os.path.exists(path2):
+            os.makedirs(path2);
+        os.chdir(path2);
+        f=MaxChk(path);
+        icFile='geom_'+str(f)+'.chk';
+        CopyFile(path,path2,fileList);
+        ICFile(path,path2,icFile,'bd.xml');
+        subprocess.call('rm *.chk',shell=True);
+        subprocess.call('rm ../*.chk',shell=True);
         incSolver(exe,fileList);
-        fileName='EnergyFile.mdl';
-        energy=np.loadtxt(fileName,skiprows=1);
+        addEnergyFile(path2,'EnergyFile.mdl');
+        bc=MaxChk(path2);
+        ac=MaxChk(path);
+        moveChk(path2,path,ac,bc);                 
+        os.chdir(path);
+        addEnergyFile(path2,'EnergyFile.mdl');
+        os.chdir(path);
+        energy=np.loadtxt('EnergyFile.mdl',skiprows=1);
         a=energy[-1,-1];
 
-        while(a< energyVal):
-            Re=Re+incre;
-            ReCh(path,fileList[1],Re);
-            incSolver(exe,fileList);
-            energy=np.loadtxt('EnergyFile.mdl',skiprows=1);
-            a=energy[-1,-1];
-        while(a< energyVal2):
-            FTCh(path,fileList[1],FT2);
-            path2=os.getcwd()+'/2';
-            if not os.path.exists(path2):
-                os.makedirs(path2);
-            os.chdir(path2);
-            f=MaxChk(path);
-            icFile='geom_'+str(f)+'.chk';
-            CopyFile(path,path2,fileList);
-            ICFile(path,path2,icFile,'bd.xml');
-            subprocess.call('rm *.chk',shell=True);
-            subprocess.call('rm ../*.chk',shell=True);
-            incSolver(exe,fileList);
-            addEnergyFile(path2,'EnergyFile.mdl');
-            bc=MaxChk(path2);
-            ac=MaxChk(path);
-            moveChk(path2,path,ac,bc);                 
-            os.chdir(path);
-            addEnergyFile(path2,'EnergyFile.mdl');
-            os.chdir(path);
-            energy=np.loadtxt('EnergyFile.mdl',skiprows=1);
-            a=energy[-1,-1];
+# This function evalutes the growth rate for finding the unstable Re number
+# 
 
-    # This function evalutes the growth rate for finding the unstable Re number
-    # 
+def firstExt3(path,exe,fileList,energyVal,FT,Re,FT2,incre,energyVal2):
+    ReCh(path,fileList[1],Re);
+    FTCh(path,fileList[1],FT);
+    incSolver(exe,fileList);
+    fileName='EnergyFile.mdl';
+    energy=np.loadtxt(fileName,skiprows=1);
+    a=energy[-1,-1];
+    loop=0;
 
-    def firstExt3(path,exe,fileList,energyVal,FT,Re,FT2,incre,energyVal2):
+    while(a< energyVal):
+        Re=Re+incre;
         ReCh(path,fileList[1],Re);
-        FTCh(path,fileList[1],FT);
         incSolver(exe,fileList);
-        fileName='EnergyFile.mdl';
-        energy=np.loadtxt(fileName,skiprows=1);
+        energy=np.loadtxt('EnergyFile.mdl',skiprows=1);
         a=energy[-1,-1];
-        loop=0;
-
-        while(a< energyVal):
-            Re=Re+incre;
-            ReCh(path,fileList[1],Re);
-            incSolver(exe,fileList);
-            energy=np.loadtxt('EnergyFile.mdl',skiprows=1);
-            a=energy[-1,-1];
-        while(a< energyVal2):
-            FTCh(path,fileList[1],FT2);
-            path2=os.getcwd()+'/2';
-            if not os.path.exists(path2):
-                os.makedirs(path2);
-            os.chdir(path2);
-            f=MaxChk(path);
-            icFile='geom'+'.fld';
+    while(a< energyVal2):
+        FTCh(path,fileList[1],FT2);
+        path2=os.getcwd()+'/2';
+        if not os.path.exists(path2):
+            os.makedirs(path2);
+        os.chdir(path2);
+        f=MaxChk(path);
+        icFile='geom'+'.fld';
         CopyFile(path,path2,fileList);
         if(loop==0):ICFile(path,path2,icFile,'bd.xml');
         if(loop>0):ICFile(path2,path2,icFile,'bd.xml');

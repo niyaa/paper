@@ -241,23 +241,6 @@ def nsvalues(path1):
 
     return xx, yy;
 
-def nsplot(Re ,beta):
-    x=Re;y=beta;
-    YX=zip(y,x);
-    YX.sort();
-    
-    xx=[];yy=[];
-    for i in range(0,len(YX)):
-        yy.append(YX[i][0]);
-        xx.append(YX[i][1]);
-    fig, ax=plt.subplots();
-    ax.plot(xx,yy);
-    ax.grid(True);
-    plt.ylabel('Beta');
-    plt.xlabel('Reynolds Number');
-    plt.show()
-
-
 
 def nekFre(inE,obsPointNos,velDir):
     #skipRows number of points obspoints Number =+1 
@@ -502,17 +485,18 @@ def poptDirEn(path1,up,down):
     l2=list(l2);l1=list(l1);
     return l1, l2;
 
+def find_nearest(array,value):
+    idx=(np.abs(array-value)).argmin();
+    return array[idx],idx;
 
-def DelReDirWithLessTime(path,timeLimit):
-    os.chdir(path);
-    cwd=os.getcwd();
-    for root, dirs, files in os.walk(path):
-        for file in files:
-            if(file.endswith(".mdl")):
-                inE=os.path.join(root,file);
-                a=np.loadtxt(inE,skiprows=1);
-                if(a[-1,0] < a[0,0]+timeLimit):
-                    print(inE);
-                    print(root);
-                    args='rm -r '+root;
-                    subprocess.call(args,shell=True);
+def find_nearest2D(x,y,z,point):
+    if(x.ndim>1):x=x.flatten();
+
+    if(y.ndim>1):y=y.flatten();
+    if(z.ndim>1):z=z.flatten();
+    
+    xy=(x-point[0])**2+(y-point[1])**2;
+    idx=[l for l,m in enumerate(xy) if m==min(np.abs(xy))];
+    return z[idx]; 
+
+    
